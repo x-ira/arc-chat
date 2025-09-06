@@ -1,215 +1,215 @@
-# Arc - 匿名安全聊天应用 🛡️
+# Arc - Anonymous Secure Chat Application 🛡️
 
-Arc 是一个基于 Rust 开发的分布式、匿名、端到端加密的聊天应用。通过先进的密码学技术和 P2P 网络，为用户提供极致的隐私保护和通信安全。
+Arc is a distributed, anonymous, end-to-end encrypted chat application built with Rust. It provides ultimate privacy protection and communication security through advanced cryptographic techniques and P2P networking.
 
-## 🔒 核心安全特性
+## 🔒 Core Security Features
 
-### 端到端加密 (E2EE)
-- **多重加密算法**：支持 AES-GCM 和 ChaCha20-Poly1305 流密码
-- **密钥交换**：使用椭圆曲线迪菲-赫尔曼 (ECDH) 协议安全交换密钥
-- **数字签名**：ECDSA 数字签名确保消息完整性和身份认证
-- **前向保密**：每次会话使用独立密钥，确保历史消息安全
+### End-to-End Encryption (E2EE)
+- **Multiple Encryption Algorithms**: Supports AES-GCM and ChaCha20-Poly1305 stream ciphers
+- **Key Exchange**: Secure key exchange using Elliptic Curve Diffie-Hellman (ECDH) protocol
+- **Digital Signatures**: ECDSA digital signatures ensure message integrity and identity authentication
+- **Forward Secrecy**: Independent keys for each session ensure historical message security
 
-### 匿名性保护
-- **无中心服务器**：基于 DHT (分布式哈希表) 的 P2P 架构
-- **身份隐私**：用户通过加密的公钥标识符 (KID) 进行识别
-- **网络匿名**：支持去中心化节点发现，无需暴露真实身份
-- **元数据保护**：最小化可追踪的通信元数据
+### Anonymity Protection
+- **Serverless Architecture**: P2P architecture based on DHT (Distributed Hash Table)
+- **Identity Privacy**: Users identified through encrypted public key identifiers (KID)
+- **Network Anonymity**: Decentralized node discovery without exposing real identity
+- **Metadata Protection**: Minimizes trackable communication metadata
 
-### 数据安全
-- **本地存储加密**：所有敏感数据在本地加密存储 (ReDB)
-- **内存安全**：Rust 语言特性提供内存安全保障
-- **零日志策略**：服务端不记录用户通信内容
-- **安全认证**：基于 HMAC 的时间戳签名防止重放攻击
+### Data Security
+- **Encrypted Local Storage**: All sensitive data encrypted locally (ReDB)
+- **Memory Safety**: Rust language features provide memory safety guarantees
+- **Zero-Log Policy**: Server doesn't record user communication content
+- **Secure Authentication**: HMAC-based timestamp signatures prevent replay attacks
 
-## ⚡ 功能特色
+## ⚡ Key Features
 
-### 💬 多种通信模式
-- **公开房间**：支持多人群聊，实时消息同步
-- **私密聊天**：点对点加密通信，完全匿名
-- **悄悄话**：房间内定向私密消息
-- **多媒体支持**：安全的图片、语音文件传输
+### 💬 Multiple Communication Modes
+- **Public Rooms**: Multi-user group chat with real-time message synchronization
+- **Private Chat**: Peer-to-peer encrypted communication, completely anonymous
+- **Whisper**: Targeted private messages within rooms
+- **Multimedia Support**: Secure image and voice file transmission
 
-### 🌐 分布式架构
-- **P2P 网络**：无需中央服务器，抗审查能力强
-- **节点自动发现**：通过 DHT 网络自动发现在线节点
-- **负载均衡**：分布式架构天然支持高并发
-- **容错机制**：单点故障不影响整体网络运行
+### 🌐 Distributed Architecture
+- **P2P Network**: No central server required, strong censorship resistance
+- **Automatic Node Discovery**: Automatic discovery of online nodes through DHT network
+- **Load Balancing**: Distributed architecture naturally supports high concurrency
+- **Fault Tolerance**: Single point failures don't affect overall network operation
 
-### 🛠️ 易用性设计
-- **一键启动**：简单的命令行启动，无需复杂配置
-- **现代化 Web 界面**：基于 SolidJS 的响应式前端
-- **跨平台支持**：支持 Windows、macOS、Linux 等主流操作系统
-- **实时通信**：基于 WebSocket 的实时消息推送
+### 🛠️ User-Friendly Design
+- **One-Click Launch**: Simple command-line startup with no complex configuration
+- **Modern Web Interface**: Responsive frontend based on SolidJS
+- **Cross-Platform Support**: Supports Windows, macOS, Linux and other mainstream operating systems
+- **Real-Time Communication**: Real-time message push based on WebSocket
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 系统要求
+### System Requirements
 - Rust 1.70+ 
-- Node.js 18+ (用于前端构建)
-- 操作系统：Windows、macOS、Linux
+- Node.js 18+ (for frontend build)
+- Operating System: Windows, macOS, Linux
 
-### 安装运行
+### Installation & Setup
 
 ```bash
-# 1. 克隆项目
+# 1. Clone the repository
 git clone https://github.com/yourusername/arc.git
 cd arc
 
-# 2. 构建 Rust 后端
+# 2. Build Rust backend
 cargo build --release
 
-# 3. 构建前端 (可选，如果需要自定义界面)
+# 3. Build frontend (optional, if customizing interface)
 cd web
 npm install
 npm run build
 cd ..
 
-# 4. 启动应用
+# 4. Start the application
 ./target/release/arc
 
-# 应用将在 http://localhost:1930 启动
+# Application will start at http://localhost:1930
 ```
 
-### Docker 部署
+### Docker Deployment
 
 ```bash
-# 构建镜像
+# Build image
 docker build -t arc-chat .
 
-# 运行容器
+# Run container
 docker run -p 1930:1930 arc-chat
 ```
 
-## ⚙️ 配置说明
+## ⚙️ Configuration
 
-应用通过 `conf/default.toml` 文件进行配置：
+Configure the application through `conf/default.toml`:
 
 ```toml
 [app]
-name = "Arc"           # 应用名称
-port = 1930           # 监听端口
+name = "Arc"           # Application name
+port = 1930           # Listen port
 
 [room]
-max_cached_msgs = 100  # 房间消息缓存上限
+max_cached_msgs = 100  # Room message cache limit
 
 [log]
-level = "info"         # 日志级别
+level = "info"         # Log level
 ```
 
-### 高级配置
+### Advanced Configuration
 
 ```toml
-# 启用用户初始化 (仅开发环境)
+# Enable user initialization (development environment only)
 init_users = false
 
-# 安全设置
-default.pass_hash = "your_hash_here"  # 默认密码哈希
-access_token_life = 604800000         # 访问令牌有效期(7天)
-request_timeout = 5000                # 请求超时时间(毫秒)
+# Security settings
+default.pass_hash = "your_hash_here"  # Default password hash
+access_token_life = 604800000         # Access token lifetime (7 days)
+request_timeout = 5000                # Request timeout (milliseconds)
 ```
 
-## 🔧 技术架构
+## 🔧 Technical Architecture
 
-### 后端技术栈
-- **Rust** - 系统级安全和性能
-- **Axum** - 现代异步 Web 框架  
-- **Tokio** - 高性能异步运行时
-- **ReDB** - 嵌入式数据库，安全存储
-- **Mainline DHT** - 分布式网络发现
+### Backend Tech Stack
+- **Rust** - System-level security and performance
+- **Axum** - Modern async Web framework  
+- **Tokio** - High-performance async runtime
+- **ReDB** - Embedded database for secure storage
+- **Mainline DHT** - Distributed network discovery
 
-### 前端技术栈
-- **SolidJS** - 响应式 Web 框架
-- **WebAssembly** - 客户端密码学运算
-- **IndexedDB** - 浏览器本地存储
-- **WebSocket** - 实时双向通信
+### Frontend Tech Stack
+- **SolidJS** - Reactive Web framework
+- **WebAssembly** - Client-side cryptographic operations
+- **IndexedDB** - Browser local storage
+- **WebSocket** - Real-time bidirectional communication
 
-### 密码学组件
-- **AES-GCM / ChaCha20-Poly1305** - 对称加密
-- **ECDH P-256** - 密钥交换
-- **ECDSA** - 数字签名
-- **HMAC-SHA256** - 消息认证
+### Cryptographic Components
+- **AES-GCM / ChaCha20-Poly1305** - Symmetric encryption
+- **ECDH P-256** - Key exchange
+- **ECDSA** - Digital signatures
+- **HMAC-SHA256** - Message authentication
 
-## 🛡️ 安全保证
+## 🛡️ Security Guarantees
 
-### 威胁模型防护
-- ✅ **网络监听**：端到端加密防止传输窃听
-- ✅ **服务器入侵**：去中心化架构无单点风险  
-- ✅ **身份追踪**：匿名标识符保护真实身份
-- ✅ **重放攻击**：时间戳签名防止消息重放
-- ✅ **中间人攻击**：数字签名验证身份真实性
+### Threat Model Protection
+- ✅ **Network Eavesdropping**: End-to-end encryption prevents transmission interception
+- ✅ **Server Compromise**: Decentralized architecture eliminates single point of risk  
+- ✅ **Identity Tracking**: Anonymous identifiers protect real identity
+- ✅ **Replay Attacks**: Timestamp signatures prevent message replay
+- ✅ **Man-in-the-Middle Attacks**: Digital signatures verify identity authenticity
 
-### 隐私保护
-- **零知识原则**：服务端无法解读用户消息内容
-- **最小化数据收集**：只收集必要的网络路由信息
-- **本地密钥管理**：私钥从不离开用户设备
-- **临时会话**：支持无痕聊天模式
+### Privacy Protection
+- **Zero-Knowledge Principle**: Server cannot decrypt user message content
+- **Minimal Data Collection**: Only collects necessary network routing information
+- **Local Key Management**: Private keys never leave user devices
+- **Ephemeral Sessions**: Supports incognito chat mode
 
-## 📖 使用指南
+## 📖 User Guide
 
-### 创建房间
-1. 启动应用后访问 Web 界面
-2. 点击"创建房间"按钮
-3. 设置房间名称和访问权限
-4. 分享房间链接给其他用户
+### Creating Rooms
+1. Access the Web interface after starting the application
+2. Click the "Create Room" button
+3. Set room name and access permissions
+4. Share room link with other users
 
-### 私密聊天
-1. 获取对方的公钥标识符 (KID)
-2. 发送加密邀请
-3. 对方确认后建立端到端加密通道
-4. 开始匿名安全通信
+### Private Chat
+1. Obtain the other party's public key identifier (KID)
+2. Send encrypted invitation
+3. After confirmation, establish end-to-end encrypted channel
+4. Begin anonymous secure communication
 
-### 发送文件
-- 支持图片：PNG、JPG、GIF 等格式
-- 支持语音：自动压缩和加密传输
-- 文件大小限制：单文件不超过 20MB
-- 自动病毒扫描和安全检查
+### File Sharing
+- Image support: PNG, JPG, GIF and other formats
+- Voice support: Automatic compression and encrypted transmission
+- File size limit: Single file not exceeding 20MB
+- Automatic virus scanning and security checks
 
-## 🤝 贡献指南
+## 🤝 Contributing
 
-我们欢迎社区贡献！请遵循以下步骤：
+We welcome community contributions! Please follow these steps:
 
-1. **Fork 项目**并创建特性分支
-2. **编写测试**确保代码质量
-3. **遵循代码规范**使用 `cargo fmt` 格式化
-4. **提交 Pull Request**并详细说明改动
+1. **Fork the project** and create a feature branch
+2. **Write tests** to ensure code quality
+3. **Follow code standards** using `cargo fmt` formatting
+4. **Submit Pull Request** with detailed change descriptions
 
-### 开发环境设置
+### Development Environment Setup
 
 ```bash
-# 安装开发依赖
+# Install development dependencies
 rustup component add clippy rustfmt
 
-# 运行测试
+# Run tests
 cargo test
 
-# 代码检查
+# Code checking
 cargo clippy
 
-# 格式化代码  
+# Format code  
 cargo fmt
 ```
 
-## 📄 开源协议
+## 📄 License
 
-本项目采用 [MIT License](LICENSE) 开源协议，允许自由使用、修改和分发。
+This project is licensed under the [MIT License](LICENSE), allowing free use, modification, and distribution.
 
-## ⚠️ 免责声明
+## ⚠️ Disclaimer
 
-- 本软件仅供学习和合法用途使用
-- 用户需遵守当地法律法规
-- 开发者不承担任何使用风险和法律责任
-- 强烈建议在重要通信前进行安全审计
+- This software is for learning and legal use only
+- Users must comply with local laws and regulations
+- Developers assume no liability for usage risks or legal consequences
+- Security auditing is strongly recommended before important communications
 
-## 🔗 相关资源
+## 🔗 Related Resources
 
-- [项目主页](https://github.com/yourusername/arc)
-- [技术文档](./docs/technical.md)
-- [安全审计报告](./docs/security-audit.md)
-- [问题反馈](https://github.com/yourusername/arc/issues)
+- [Project Homepage](https://github.com/yourusername/arc)
+- [Technical Documentation](./docs/technical.md)
+- [Security Audit Report](./docs/security-audit.md)
+- [Issue Reporting](https://github.com/yourusername/arc/issues)
 
 ---
 
-**Arc** - 让隐私通信回归本质 🚀
+**Arc** - Bringing privacy communication back to its essence 🚀
 
 *Built with ❤️ by the Arc Team*
