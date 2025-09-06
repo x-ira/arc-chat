@@ -68,11 +68,11 @@ function RoomQuery(props) {
         <div> <b>Room:</b> {sltRoom()[0]} </div>
         <div> <b>Id:</b> {sltRoom()[3]} </div>
         <div> <b>Kind:</b> {RoomKind.get(sltRoom()[2])} </div>
-        <div> <b>Descrition:</b> {sltRoom()[1]} </div>
+        <div> <b>Description:</b> {sltRoom()[1]} </div>
         {sltRoom()[2] == 'e' && 
           <Pwd tip="Pass Code"  bind={$pin}  />
         }
-        <Btn name="Join" bind={join} />  &nbsp; <Lnk to={`/room/${sltRoom()[3]}`}  name="Admin" class="navi"/> &nbsp;
+        <Btn name="Join" bind={join} /> &nbsp; <Lnk to={`/room/${sltRoom()[3]}`}  name="Admin" class="navi"/> &nbsp;
         {msg()}
       </>}
       <p>

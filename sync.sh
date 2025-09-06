@@ -12,4 +12,4 @@ cd web; npm run build; cd ..
 
 # sync to server
 rsync -vzrtopg -e "ssh -p 22"  --exclude=.DS_Store \
-   $APP ./dist $1:~/apps/arc --delete
+   $APP ./conf ./dist $1:~/apps/arc --delete

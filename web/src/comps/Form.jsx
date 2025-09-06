@@ -102,7 +102,7 @@ function Slt(props) {
   let opt_disp = props.opt_disp || function(opt){opt[1]}; //callback fn 
   return (
     <>
-    { props.name && <label>{props.name}:1</label> }
+    { props.name && <label>{props.name}:</label> }
     <select onchange={e=>$v(e.currentTarget.value)} value={v()} class={cls}  disabled={props.disabled}>
       <For each={props.options}>
         { (opt,_i) =>

@@ -1,11 +1,11 @@
 #  Arc - **A**nonymous **R**elay **C**hat
 
-**Arc** (**A**nonymous **R**elay **C**hat) is a next-generation, **zero-trust**, **peer-to-peer** communication platform that puts your **privacy**, **security**, and **performance** first. Built with Rust's memory-safe architecture and powered by decentralized relay networks, Arc delivers military-grade anonymity through intelligent message routing.
+**Arc** (**A**nonymous **R**elay **C**hat) is a next-generation, **zero-trust**, **progressive** chat application that puts your **privacy**, **security**, and **performance** first. Built with Rust's memory-safe architecture and powered by decentralized relay networks, Arc delivers military-grade anonymity through intelligent message routing.
 
 >  **Mission**: Anonymous communication through secure relay networks - no servers, no logs, no compromise.
 > 
 >  **How it works**: Your messages are relayed through multiple encrypted hops across our peer-to-peer network, ensuring complete anonymity and censorship resistance.
-
+## Demo: [Mitrá - मित्र](http://54.183.244.205:1024/)
 ## 🚀 Why Choose Arc?
 
 ### 🔐 **Uncompromising Anonymity**
