@@ -9,34 +9,34 @@
 ## 🚀 Why Choose Arc?
 
 ### 🔐 **Uncompromising Anonymity**
-- ** Smart Relay Network**: Messages routed through multiple encrypted relay nodes
-- ** Zero Central Authority**: No servers, no single points of failure or surveillance
-- ** Cryptographic Identity**: Anonymous KID system - your real identity stays hidden
-- ** Traffic Obfuscation**: Connection patterns masked through intelligent relay routing
-- ** DHT Discovery**: Find relay nodes without exposing your location or identity
-- ** No Registration**: Start relaying and chatting instantly - zero personal data required
+- **Smart Relay Network**: Messages routed through multiple encrypted relay nodes
+- **Zero Central Authority**: No servers, no single points of failure or surveillance
+- **Cryptographic Identity**: Anonymous KID system - your real identity stays hidden
+- **Traffic Obfuscation**: Connection patterns masked through intelligent relay routing
+- **DHT Discovery**: Find relay nodes without exposing your location or identity
+- **No Registration**: Start relaying and chatting instantly - zero personal data required
 
 ### 🛡️ **Military-Grade Security**
-- ** End-to-End Encryption**: AES-GCM & ChaCha20-Poly1305 with perfect forward secrecy
-- ** ECDH Key Exchange**: Quantum-resistant elliptic curve cryptography
-- ** Digital Signatures**: ECDSA ensures message integrity and authenticity
-- ** Encrypted Storage**: Local data protected with ReDB encryption
-- ** Memory Safety**: Rust prevents buffer overflows and memory vulnerabilities
-- ** Anti-Replay**: HMAC timestamps prevent message replay attacks
+- **End-to-End Encryption**: AES-GCM & ChaCha20-Poly1305 with perfect forward secrecy
+- **ECDH Key Exchange**: Quantum-resistant elliptic curve cryptography
+- **Digital Signatures**: ECDSA ensures message integrity and authenticity
+- **Encrypted Storage**: Local data protected with ReDB encryption
+- **Memory Safety**: Rust prevents buffer overflows and memory vulnerabilities
+- **Anti-Replay**: HMAC timestamps prevent message replay attacks
 
 ### ⚡ **Blazing Fast Performance**
-- ** Rust-Powered**: Zero-cost abstractions and native performance
-- ** Async Architecture**: Tokio-based for handling thousands of connections
-- ** Instant Messaging**: WebSocket for real-time, low-latency communication
-- ** Lightweight**: Minimal resource usage, runs smoothly on any device
-- ** Efficient P2P**: Optimized DHT routing for fast peer discovery
+- **Rust-Powered**: Zero-cost abstractions and native performance
+- **Async Architecture**: Tokio-based for handling thousands of connections
+- **Instant Messaging**: WebSocket for real-time, low-latency communication
+- **Lightweight**: Minimal resource usage, runs smoothly on any device
+- **Efficient P2P**: Optimized DHT routing for fast peer discovery
 
 ### 🎯 **Effortless User Experience**
-- ** One-Click Start**: Single command deployment with zero configuration
-- ** Modern Web UI**: Responsive SolidJS interface works on any device
-- ** No Setup Required**: Works out-of-the-box with sensible defaults
-- ** Drag & Drop**: Seamless file sharing up to 20MB per file
-- ** Intuitive Design**: Clean, distraction-free interface focused on conversation
+- **One-Click Start**: Single command deployment with zero configuration
+- **Modern Web UI**: Responsive SolidJS interface works on any device
+- **No Setup Required**: Works out-of-the-box with sensible defaults
+- **Drag & Drop**: Seamless file sharing up to 20MB per file
+- **Intuitive Design**: Clean, distraction-free interface focused on conversation
 
 ## 🌟 Core Features
 
