@@ -1,0 +1,6 @@
+/target
+/dist
+/web/node_modules
+/log
+/db
+/res

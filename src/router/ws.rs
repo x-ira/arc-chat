@@ -1,0 +1,205 @@
+use std::{collections::{HashSet, VecDeque}, fs::{self, File}, io::Write, sync::Arc};
+use air::conf::cfg_or;
+use base::util::rand;
+use base64ct::{Base64, Encoding};
+use futures::SinkExt;
+use tokio::sync::{broadcast::{self, Sender}, mpsc::{self}};
+use futures::stream::{SplitSink, StreamExt};
+use axum::{extract::{ws::{Message, WebSocket}, DefaultBodyLimit, Multipart, Path, State, WebSocketUpgrade}, response::Response, routing::{any, get, post}, Json, Router};
+use tokio_util::sync::CancellationToken;
+use crate::{err::{AppErr, AppResult}, model::Kid, util::b64_url_u8_32};
+use crate::model::{Msg, PubRoom, WsMsg};
+use super::AppCtx;
+
+const MAX_FILE_SIZE: usize = 20; // MB
+const ROOM_CH_SIZE: usize = 100;
+const USER_CH_SIZE: usize = 100;
+
+pub type RoomTxMap = dashmap::DashMap<String, broadcast::Sender<WsMsg>>;
+pub type UserTxs = dashmap::DashMap<Kid, mpsc::Sender<WsMsg>>;
+
+pub fn router() -> Router<Arc<AppCtx>> {
+    Router::new()
+        .route("/hi", get(|| async { "Hello, World!" }))
+        .route("/upload", post(upload).layer(DefaultBodyLimit::disable())) // disable req body limit
+        .route("/{nick}/k/{kid}", any(ws_handler))
+}
+async fn upload(mut multipart: Multipart) -> AppResult<Json<Vec<String>>>{ //only for pub-room
+    let mut file_urls = Vec::new();
+    while let Some(field) = multipart.next_field().await? {
+        if let Some(f_name) = field.file_name(){
+            // println!("{:?}", field.content_type());
+            let mut res_type = "other".to_string();
+            if let Some(cont_type) = &field.content_type()
+                && let Some((t,_)) = cont_type.split_once('/') {
+                    res_type = t.to_string();
+                }
+            let file_name = f_name.to_string();
+            let data = field.bytes().await?;
+            if data.len() > MAX_FILE_SIZE * 1024 * 1024 {
+               return Err(AppErr::UploadFail(format!("File is too large, size should less than {MAX_FILE_SIZE}M.")));
+            }
+            // println!("Length of `{}` is {} bytes", file_name, data.len());
+            let rnd_code = rand::rnd_in(10000);
+            let path = format!("res/{res_type}");
+            let url = format!("{path}/{rnd_code}_{file_name}");
+            fs::create_dir_all(path)?;
+            let mut file = File::create(url.clone())?;
+            file.write_all(&data)?;
+            file_urls.push(url);
+        }
+    }
+    Ok(Json(file_urls))
+} 
+async fn ws_handler(ws: WebSocketUpgrade, State(state): State<Arc<AppCtx>>, Path((nick,kid)): Path<(String,String)>) -> Response {
+    ws.on_upgrade(move |socket| handle_socket(socket, state, nick, kid))
+}
+async fn handle_socket(socket: WebSocket, state: Arc<AppCtx>, nick: String, kid_safe: String) {
+    let (mut sender, mut receiver) = socket.split();
+    let (i_tx, mut i_rx) = mpsc::channel::<WsMsg>(USER_CH_SIZE);
+    let token = CancellationToken::new();
+    let mut room_set = HashSet::<String>::new();
+    let rm_max_cached_msgs = cfg_or("room.max_cached_msgs", 100);
+    
+    let kid_buf = b64_url_u8_32(&kid_safe)
+        .unwrap_or_else(|_| panic!("Invalid KID: {kid_safe} for {nick}"));
+    let kid_local = Base64::encode_string(&kid_buf);
+    
+    state.user_txs.insert(kid_buf, i_tx.clone());
+    
+    let room_listener = |room_tx: Sender<WsMsg>| {
+        let mut room_rx = room_tx.subscribe();
+        let task_token = token.clone();
+        let task_i_tx = i_tx.clone();
+        let nick = nick.clone();
+        tokio::spawn(async move { // room listener
+            tokio::select! {
+                _ = task_token.cancelled() => {
+                    println!("ws::task_group aborted. client: {nick}");
+                },
+                _ = async { //room chat
+                    while let Ok(ws_msg) = room_rx.recv().await {
+                        if let WsMsg::Welcome { ref kid, ..} = ws_msg
+                            && kid == &kid_buf { continue }  // skip self-welcome
+                        if let WsMsg::Chat { msg:Msg{wisper:Some(ref w_kid), kid, ..}, .. } = ws_msg
+                            && w_kid != &kid_buf && kid != kid_buf  { continue } // only send to wisperers
+                        if task_i_tx.send(ws_msg).await.is_err() { break }
+                    }
+                } => {},
+            }
+        });
+    };
+    let get_room_tx = |room: &String| {
+        match state.txs.get(room){
+            Some(v) => v.clone(),
+            None => {
+                let (tx, _) = broadcast::channel(ROOM_CH_SIZE);
+                state.txs.insert(room.clone(), tx.clone());
+                tx
+            }
+        }
+    };
+    
+    // Set up message forwarding
+    let task_token = token.clone();
+    tokio::spawn(async move { // rendezvous point
+        tokio::select! {
+            _ = task_token.cancelled() => {
+                // println!("ws::task_group aborted");
+            },
+            _ = async { //self-talks & room chat
+                while let Some(msg) = i_rx.recv().await { 
+                    // println!("sending: {msg:?}");
+                    if !send_to_client(&msg, &mut sender).await { }
+                }
+            } => {}, 
+        }
+    });
+    // Handle incoming messages
+    'msg_handler: while let Some(Ok(Message::Binary(data))) = receiver.next().await {
+        // let mut de = rmp_serde::Deserializer::from_read_ref(&data).with_human_readable();
+        // let rmp_msg_result = Deserialize::deserialize(&mut de);
+        if let Ok(ws_msg) = rmp_serde::from_slice::<WsMsg>(&data){
+            // println!("recv ws_msg: {ws_msg:?}");
+            match ws_msg {
+                WsMsg::Bye => break,
+                WsMsg::Listen{ref room, ref kind} => {
+                    if PubRoom::verify(&state.store, room, kind).is_ok() && !room_set.contains(room) {
+                        let room_tx = get_room_tx(room);
+                        room_listener(room_tx.clone());
+                        // println!("listen to {room:?} for {nick}");
+                        let rm_user = (nick.clone(), kid_local.clone()); //for invite
+                        if let Some(mut users) = state.rm_users.get_mut(room) {
+                            users.push(rm_user);
+                        }else{
+                            state.rm_users.insert(room.into(), vec![rm_user]); //7144336
+                        }
+                        //notify others in this room
+                        // if room_tx.send(WsMsg::Welcome { nick: nick.clone(), kid: kid_local.clone() }).is_err()  { break 'msg_handler }
+                        room_set.insert(room.into());
+                    }
+                },
+                WsMsg::Media { ref kid,  .. } => { //only for priv-chat
+                    // println!("Media Msg:{kid}");
+                    if let Some(kid_tx) = state.user_txs.get(kid)
+                        && kid_tx.send(ws_msg.clone()).await.is_err() { break }
+                }
+                WsMsg::PrivChat { ref kid,  ref msg, ..  } => {
+                    if let Some(kid_tx) = state.user_txs.get(kid)
+                        && kid_tx.send(ws_msg.clone()).await.is_ok() { //sent ok
+                        if i_tx.send(ws_msg).await.is_err() { break } //send to me
+                     }else if i_tx.send(
+                         WsMsg::PrivChat { kid: *kid, state: 1, msg: msg.clone() } //modified if partner is offline
+                     ).await.is_err() { break } //fail sent, update state
+                },
+                WsMsg::Chat { ref room, ref msg } => { // room chato
+                    if let Some(mut msgs) = state.caches.get_mut(room) {
+                        // we only cache 100 msgs for each room by far, you can change it from config file
+                        if msgs.len() ==  rm_max_cached_msgs { //ring buffer
+                            msgs.pop_front();
+                        }
+                        msgs.push_back(msg.clone());
+                    }else{ //init
+                        let mut msgs = VecDeque::with_capacity(rm_max_cached_msgs); //create ring buffer with config
+                        msgs.push_back(msg.clone());
+                        state.caches.insert(room.clone(), msgs);
+                    }
+                    let room_tx = get_room_tx(room);
+                    if room_tx.send(ws_msg).is_err()  { break 'msg_handler }
+                },
+                WsMsg::Invite { ref kid, .. } | WsMsg::Reply { ref kid, .. } | WsMsg::InviteTracking { ref kid, .. }=> {
+                    if let Some(kid_tx) = state.user_txs.get(kid)
+                        && kid_tx.send(ws_msg.clone()).await.is_err(){ break }
+                },
+                WsMsg::Stat(room) => { // stat online users
+                    let room_tx = get_room_tx(&room);
+                    let rx_cnt = room_tx.receiver_count();
+                    if i_tx.send(WsMsg::Rsp(format!("onlines:{rx_cnt}"))).await.is_err() { break }
+                },
+                _ => {}
+            }
+        }
+    }
+    for room in room_set{ //remove user from all listened rooms
+        if let Some(mut users) = state.rm_users.get_mut(&room){
+            users.retain(|(_nick, kid_b64)| kid_local != *kid_b64);
+        }
+    }
+    // println!("rm_users: {:?}", state.rm_users);
+    state.user_txs.remove(&kid_buf);
+    token.cancel();
+    println!("{nick} is offline");
+}
+async fn send_to_client(msg: &WsMsg, sender: &mut SplitSink<WebSocket,Message>) -> bool {
+    match rmp_serde::to_vec_named(msg) {
+        Ok(enc) => {
+            if sender.send(Message::Binary(enc.into())).await.is_err() {
+                return false;
+            }
+        }
+        Err(e) => {
+            log::error!("try encode msg failed. err: {e}");
+        },
+    }
+    true
+}

@@ -1,0 +1,65 @@
+.voi_container {
+  display: inline-block;
+  position: relative;
+  margin: 0px 5px;
+  width: 64%;
+  max-width: 300px;
+  height: 1.7rem;
+  border: 1px solid #999;
+  background: field;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.control{
+  display: inline-block;
+  padding: 3px;
+  float: right;
+  /*text-align:center;  will fail !*/
+}
+.voice_bar{
+  padding:3px;
+  text-align:center;
+}
+.flow-container {
+  display: inline-block;
+  width: calc(100% - 90px);
+  position: relative;
+  vertical-align: middle;
+}
+.point {
+  position: absolute;
+  transform: translateY(-40%);
+  width: 2px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #9747FF; /* Initial color */
+  opacity: 0.8;
+  animation-name: flowAnimation;
+  animation-duration: 5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes flowAnimation {
+  0% {
+    left: 0px;
+    opacity: 0.1;
+  }
+  25% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    left: 100%;
+    opacity: 1;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .container {
+    color: lightgray;
+  }
+}

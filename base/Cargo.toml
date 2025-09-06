@@ -1,0 +1,35 @@
+[package]
+name = "base"
+version = "0.1.3"
+edition = "2024"
+
+[features]
+default = ["db"]
+db = ["redb", "bincode"]
+req = ["reqwest", "scraper", "url", "tokio"]
+
+[dependencies]
+air = { path = "../air", package = "air" }
+
+log = "^0.4"
+rand = "0.9"
+
+redb = { version = "3", optional = true }
+chrono = { version = "*", default-features = false, features = ["clock"] }
+
+reqwest = { version = "*", default-features = false, features = ["rustls-tls","json", "gzip", "brotli","socks"], optional = true}
+scraper = { version = "0.16", optional = true }
+url = { version = "2.3", optional = true }
+
+tokio = { version = "1", default-features = false, features = ["sync"], optional = true}  # macros,rt-multi-thread
+serde = {version = "^1.0", features = ["derive"]}
+serde_json = { version = "^1.0", default-features = false, features = ["alloc"] }
+bincode= { version ="2.0", features = ["serde"], optional = true}
+
+[target.x86_64-unknown-linux-musl.dependencies] # cross compile
+openssl = { version = "*", features = ["vendored"] }
+[target.x86_64-unknown-linux-gnu.dependencies]  # local compile
+openssl = { version = "*", features = ["vendored"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"]}  # macros,rt-multi-thread

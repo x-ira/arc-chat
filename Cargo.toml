@@ -1,0 +1,38 @@
+[package]
+name = "arc"
+version = "0.1.0"
+edition = "2024"
+default-run = "arc"
+
+#[features]
+
+[dependencies]
+air = { path = "air", package = "air" }
+base = { path = "base", package = "base", features = ["req"] }
+
+log = "^0.4"
+
+axum = { version = "^0.8", features = ["ws","multipart"] }
+axum-extra = "*"
+tower-http = { version = "^0.6", features = ["fs"] }
+
+rmp-serde = "1.3.0"
+serde = { version = "1", features = ["derive"] }
+serde_bytes = "0.11"
+
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "*"
+tokio-util = "0.7"
+futures = "^0.3"
+
+mainline = "5.4.0"
+dashmap = "6.1.0"
+
+nanoid = "0.4.0"
+base64ct = { version = "1", features = ["alloc"] }
+
+bytes = "1.10.1"
+env_logger = "0.10"
+rand = "0.8"
+
+
