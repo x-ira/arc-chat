@@ -1,42 +1,42 @@
-# 🛡️ Arc - **A**nonymous **R**elay **C**hat
+#  Arc - **A**nonymous **R**elay **C**hat
 
 **Arc** (**A**nonymous **R**elay **C**hat) is a next-generation, **zero-trust**, **peer-to-peer** communication platform that puts your **privacy**, **security**, and **performance** first. Built with Rust's memory-safe architecture and powered by decentralized relay networks, Arc delivers military-grade anonymity through intelligent message routing.
 
-> 🎯 **Mission**: Anonymous communication through secure relay networks - no servers, no logs, no compromise.
+>  **Mission**: Anonymous communication through secure relay networks - no servers, no logs, no compromise.
 > 
-> 🔄 **How it works**: Your messages are relayed through multiple encrypted hops across our peer-to-peer network, ensuring complete anonymity and censorship resistance.
+>  **How it works**: Your messages are relayed through multiple encrypted hops across our peer-to-peer network, ensuring complete anonymity and censorship resistance.
 
 ## 🚀 Why Choose Arc?
 
 ### 🔐 **Uncompromising Anonymity**
-- **🔄 Smart Relay Network**: Messages routed through multiple encrypted relay nodes
-- **🌐 Zero Central Authority**: No servers, no single points of failure or surveillance
-- **👤 Cryptographic Identity**: Anonymous KID system - your real identity stays hidden
-- **🕵️ Traffic Obfuscation**: Connection patterns masked through intelligent relay routing
-- **🌍 DHT Discovery**: Find relay nodes without exposing your location or identity
-- **🚫 No Registration**: Start relaying and chatting instantly - zero personal data required
+- ** Smart Relay Network**: Messages routed through multiple encrypted relay nodes
+- ** Zero Central Authority**: No servers, no single points of failure or surveillance
+- ** Cryptographic Identity**: Anonymous KID system - your real identity stays hidden
+- ** Traffic Obfuscation**: Connection patterns masked through intelligent relay routing
+- ** DHT Discovery**: Find relay nodes without exposing your location or identity
+- ** No Registration**: Start relaying and chatting instantly - zero personal data required
 
 ### 🛡️ **Military-Grade Security**
-- **🔒 End-to-End Encryption**: AES-GCM & ChaCha20-Poly1305 with perfect forward secrecy
-- **🔑 ECDH Key Exchange**: Quantum-resistant elliptic curve cryptography
-- **✍️ Digital Signatures**: ECDSA ensures message integrity and authenticity
-- **💾 Encrypted Storage**: Local data protected with ReDB encryption
-- **🛡️ Memory Safety**: Rust prevents buffer overflows and memory vulnerabilities
-- **⏱️ Anti-Replay**: HMAC timestamps prevent message replay attacks
+- ** End-to-End Encryption**: AES-GCM & ChaCha20-Poly1305 with perfect forward secrecy
+- ** ECDH Key Exchange**: Quantum-resistant elliptic curve cryptography
+- ** Digital Signatures**: ECDSA ensures message integrity and authenticity
+- ** Encrypted Storage**: Local data protected with ReDB encryption
+- ** Memory Safety**: Rust prevents buffer overflows and memory vulnerabilities
+- ** Anti-Replay**: HMAC timestamps prevent message replay attacks
 
 ### ⚡ **Blazing Fast Performance**
-- **🦀 Rust-Powered**: Zero-cost abstractions and native performance
-- **⚡ Async Architecture**: Tokio-based for handling thousands of connections
-- **🚄 Instant Messaging**: WebSocket for real-time, low-latency communication
-- **📱 Lightweight**: Minimal resource usage, runs smoothly on any device
-- **🔄 Efficient P2P**: Optimized DHT routing for fast peer discovery
+- ** Rust-Powered**: Zero-cost abstractions and native performance
+- ** Async Architecture**: Tokio-based for handling thousands of connections
+- ** Instant Messaging**: WebSocket for real-time, low-latency communication
+- ** Lightweight**: Minimal resource usage, runs smoothly on any device
+- ** Efficient P2P**: Optimized DHT routing for fast peer discovery
 
-### 🎨 **Effortless User Experience**
-- **⚡ One-Click Start**: Single command deployment with zero configuration
-- **🌐 Modern Web UI**: Responsive SolidJS interface works on any device
-- **🔧 No Setup Required**: Works out-of-the-box with sensible defaults
-- **📁 Drag & Drop**: Seamless file sharing up to 20MB per file
-- **🎯 Intuitive Design**: Clean, distraction-free interface focused on conversation
+### 🎯 **Effortless User Experience**
+- ** One-Click Start**: Single command deployment with zero configuration
+- ** Modern Web UI**: Responsive SolidJS interface works on any device
+- ** No Setup Required**: Works out-of-the-box with sensible defaults
+- ** Drag & Drop**: Seamless file sharing up to 20MB per file
+- ** Intuitive Design**: Clean, distraction-free interface focused on conversation
 
 ## 🌟 Core Features
 
@@ -64,15 +64,15 @@
 
 ## ⚡ Lightning-Fast Setup
 
-> 🎆 **Get started in under 2 minutes!** Arc is designed for instant deployment with zero hassle.
+>  **Get started in under 2 minutes!** Arc is designed for instant deployment with zero hassle.
 
-### 💻 System Requirements
+###  System Requirements
 - **Rust**: 1.70+ (for building from source)
 - **OS**: Windows, macOS, Linux, or any modern operating system
 - **RAM**: 50MB minimum (incredibly lightweight!)
 - **Storage**: ~10MB for the application
 
-### 📬 Quick Installation
+###  Quick Installation
 
 #### Option 1: One-Command Deploy (Recommended)
 ```bash
@@ -136,8 +136,6 @@ level = "info"         # Log level
 ### Advanced Configuration
 
 ```toml
-# Enable user initialization (development environment only)
-init_users = false
 
 # Security settings
 default.pass_hash = "your_hash_here"  # Default password hash
@@ -241,7 +239,7 @@ Report it on [GitHub Issues](https://github.com/x-ira/arc-chat/issues) - we fix 
 
 ---
 
-## 📄 Legal & Licensing
+## Legal & Licensing
 
 **License**: [MIT License](LICENSE) - Use freely, modify, distribute!
 
@@ -253,15 +251,13 @@ Report it on [GitHub Issues](https://github.com/x-ira/arc-chat/issues) - we fix 
 
 ---
 
-## 🎆 **Arc - Privacy Revolution**
+## **Arc - Privacy Revolution**
 
 > *"In a world of surveillance, anonymity is not a luxury - it's a necessity."*
 
 🔗 **Links**
 - 🌍 **Source Code**: [GitHub Repository](https://github.com/x-ira/arc-chat)
 - 📚 **Documentation**: [Technical Docs](./docs/)
-- 🛡️ **Security Audit**: [Audit Reports](./docs/security/)
-- 🐛 **Issues**: [Bug Reports & Features](https://github.com/x-ira/arc-chat/issues)
 
 ---
 
