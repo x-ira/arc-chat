@@ -1,8 +1,7 @@
-import { createEffect, createSignal, For, Match, onMount, Show, Switch} from 'solid-js';
+import { createEffect, createSignal, For, Match, onCleanup, onMount, Show, Switch} from 'solid-js';
 import { createStore } from 'solid-js/store';
 import {Time,get,post,upload_files, b64_u8, b64_url, u8_b64} from '../utils/app';
 import {Btn, Slt, ImgSlt, Lnk} from '../comps/Form';
-import ws_client from '../utils/ws';
 import { Cipher, PrivChat, break_time, msg_room, nick_name } from '../utils/main';
 import Notifier from '../comps/Notifier';
 import Invitation from '../comps/Invitation';
@@ -14,6 +13,7 @@ import { inv_sign, inv_track_verify, inv_verify, m_io, me } from '../comps/ChatH
 import { room, rmk, ecdh, save_priv_chat, update_priv_chat, ecdh_exchange, priv_chat, room_id } from '../stores/chat';
 import { set, get as find, clear, setMany } from 'idb-keyval';
 import { nanoid } from 'nanoid';
+import WebSocketClient from '../utils/ws';
 
 function RoomChat(props) {
   let nick = nick_name();
@@ -24,23 +24,27 @@ function RoomChat(props) {
   let [txt_cmd, $txt_cmd] = createSignal(null);
   let [notify_msg, $notify_msg] = createSignal(); 
   let [inv_msg, $inv_msg] = createSignal(); 
+  let [conn_state, $conn_state] = createSignal(); 
   let [msgs, $msgs] = createStore([]);
   let blob_urls = [];
   let kid = dsa.kid;
   let skid = dsa.skid;
   let msg_block; //el
   let wsc;
-
-  const ws_conn = () => ws_client({endpoint: `/ws/${nick}/k/${b64_url(dsa.verify_key)}`, binary: true, no_dispatcher: true, def_evt_name: 'msg'});
+  let endpoint = `/ws/${nick}/k/${b64_url(dsa.verify_key)}`;
   const init = () =>{
-    // addEventListener('visibilitychange', () => {
-    //   if (document.visibilityState === 'visible') {
-    //     // console.log('vis-change', wsc.readyState)
-    //     if(wsc.readyState == 1) refresh_room(); //always refresh to get latest msgs
-    //     else wsc = ws_conn(); //refresh room after reconn(evt: #connected)
-    //   }
-    // });
-    wsc = ws_conn();
+    wsc = new WebSocketClient(endpoint);
+    wsc.on('#connected', ()=>{ //refresh room after (re)connected
+     $conn_state();
+     listen_room();
+    });
+    wsc.on('#reconnecting', ({attempt}) => {
+      $conn_state('Try to connect the server...', attempt);
+    });
+    wsc.on('#reconnect_failed', () => {
+      wsc.close();
+      $conn_state('Fail to connect. Refresh the page to start over');
+    });
     wsc.on('msg', async ws_msg => { //register once
       // console.log('recv msg', ws_msg);
       if(ws_msg.Chat || ws_msg.PrivChat) {
@@ -94,9 +98,6 @@ function RoomChat(props) {
         update_priv_chat(u8_b64(it.by_kid), it.state);
       }
     });
-    wsc.on('#connected', ()=>{ //refresh room after (re)connected
-      listen_room();
-    });
   }
   const history_msgs = () => room().type == 0 ? remote_history() : local_history();
   const local_history = () => { //only for priv-chats
@@ -121,7 +122,7 @@ function RoomChat(props) {
     });
   }
   const listen_room = ()=> {
-    if(room() && wsc && wsc.readyState == 1)
+    if(room() && wsc)
       wsc.emit({Listen: {room:room().id, kind: room().kind}});
   }
   const refresh_room = () => {
@@ -166,7 +167,7 @@ function RoomChat(props) {
       case 'block':
         new_msg = {Block: params};
         break;
-      case 'stat':
+      case 'stat': //TODO
         break;
       case 'help':
       default :
@@ -231,6 +232,7 @@ function RoomChat(props) {
     });
   }
   onMount(()=>init());
+  onCleanup(() =>wsc.close());
   createEffect(() =>{
     if(room().rmk) { //rmk change means room changed!!
       refresh_room();
@@ -253,6 +255,9 @@ function RoomChat(props) {
       </Match>
       <Match when={room().type == 0 || room().state >= 5} >
       <Notifier incoming_msg={notify_msg} />
+      { conn_state() && 
+      <div class="conn_state">{conn_state}</div>
+      }
       <div><SidebarCmd show={props.show} /></div>
       <div class="msg_block" ref={msg_block}>
         <Show when={rest_len()} >

@@ -66,16 +66,14 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppCtx>, nick: String, kid_
     let kid_local = Base64::encode_string(&kid_buf);
     
     state.user_txs.insert(kid_buf, i_tx.clone());
-    
     let room_listener = |room_tx: Sender<WsMsg>| {
         let mut room_rx = room_tx.subscribe();
         let task_token = token.clone();
         let task_i_tx = i_tx.clone();
-        let nick = nick.clone();
         tokio::spawn(async move { // room listener
             tokio::select! {
                 _ = task_token.cancelled() => {
-                    println!("ws::task_group aborted. client: {nick}");
+                    // println!("ws::task_group aborted. client: {nick}");
                 },
                 _ = async { //room chat
                     while let Ok(ws_msg) = room_rx.recv().await {

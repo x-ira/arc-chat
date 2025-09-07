@@ -48,7 +48,7 @@ function Setting(){
       </div>
     
       </form>
-      <div>{msg()}</div>
+      <div>{msg}</div>
     </div>
   )  
 }

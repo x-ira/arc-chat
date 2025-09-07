@@ -73,7 +73,7 @@ function RoomQuery(props) {
           <Pwd tip="Pass Code"  bind={$pin}  />
         }
         <Btn name="Join" bind={join} /> &nbsp; <Lnk to={`/room/${sltRoom()[3]}`}  name="Admin" class="navi"/> &nbsp;
-        {msg()}
+        {msg}
       </>}
       <p>
           <Lnk to="/room"  name="Create Room" class="navi"/> &nbsp;&nbsp;
