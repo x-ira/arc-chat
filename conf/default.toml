@@ -1,20 +1,21 @@
-# peer_mode = false # default true, enable to find other peers
-
-# req.proxy = "socks5://127.0.0.1:1080";
+# peer_mode = false # default true, uncomment this if you want start independent chat server
+# req.proxy = "socks5://127.0.0.1:1080"; # if you need a proxy to discover other nodes
 
 [app]
 name = "Arc"
 lan_port = 1930
 wan_port = 2010
 
+# when other node find this node, the below meta info is offered
 [meta]
 name = "Mitrá - मित्र" # node name for display
 desc = "Welcome to Mitrá - मित्र"   # description about this node
 # domain_url = "http://127.0.0.1:1930"   # Optional, if you have a domain for this site. format: "http(s)://<YOUR-DOMAIN-NAME-OR-IP>: <PORT>/"
 
-[log]
-level="info"
-# output="file"  # console | file
 
 [room]
 max_cached_msgs = 100 # cached room messages limit, if reach limit 'oldest' one will be dropped.
+
+[log]
+level="info"
+# output="file"  # console | file

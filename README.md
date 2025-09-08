@@ -23,7 +23,7 @@
 | Encrypted Messages  | ✓          | ✓             | ✓            |
 | Command             | ✓          | ✓             | ✓            |
 
->*Each member of Secured Group share a same private key that server DOESN'T know it.
+>* Each member of Secured Group share a same private key that server DOESN'T know it.
 
 - __Security__
   + Using ECDSA (Elliptic Curve Digital Signature Algorithm) to ensures key messages(eg, KID) integrity and authenticity.
@@ -140,26 +140,24 @@ docker run -p 1930:1930 arc-chat
 Configure the application through `conf/default.toml`:
 
 ```toml
+# peer_mode = false # default true, uncomment this if you want start independent chat server
+
 [app]
-name = "Arc"           # Application name
-port = 1930           # Listen port
+name = "Arc"
+lan_port = 1930
+wan_port = 2010
+
+# when other node find this node, the below meta info is offered
+[meta]
+name = "Mitrá - मित्र" # node name for display
+desc = "Welcome to Mitrá - मित्र"   # description about this node
+# domain_url = "http://127.0.0.1:1930"   # Optional, if you have a domain for this site. format: "http(s)://<YOUR-DOMAIN-NAME-OR-IP>: <PORT>/"
 
 [room]
-max_cached_msgs = 100  # Room message cache limit
-
-[log]
-level = "info"         # Log level
+max_cached_msgs = 100 # cached room messages limit, if reach limit 'oldest' one will be dropped.
+...
 ```
 
-### Advanced Configuration
-
-```toml
-
-# Security settings
-default.pass_hash = "your_hash_here"  # Default password hash
-access_token_life = 604800000         # Access token lifetime (7 days)
-request_timeout = 5000                # Request timeout (milliseconds)
-```
 
 ## 🏧 High-Performance Architecture
 
