@@ -4,7 +4,6 @@
 
 >  **Mission**: Anonymous communication through secure relay networks - no servers, no logs, no compromise.
 > 
->  **How it works**: Your messages are relayed through multiple encrypted hops across our peer-to-peer network, ensuring complete anonymity and censorship resistance.
 ## Demo: [Mitrá - मित्र](http://54.183.244.205:1024/)
 ## Core Features
 - __Anonymous__:
@@ -15,7 +14,6 @@
 - __Progressive__:
   + There are 3 types of chat (see below),  you can choose different security level of chat as you wish.
 
-
 |                     | Open Group | Secured Group | Private Chat |
 |---------------------|------------|---------------|--------------|
 | E2EE                |            | ✓*            | ✓            |
@@ -25,20 +23,30 @@
 | Encrypted Messages  | ✓          | ✓             | ✓            |
 | Command             | ✓          | ✓             | ✓            |
 
->*Each member of Secured Group share a same private key that the server DOESN'T know it.
+>*Each member of Secured Group share a same private key that server DOESN'T know it.
 
 - __Security__
-  + Using ECDSA (Elliptic Curve Digital Signature Algorithm) to sign key informations for exchange, eg, KID.
+  + Using ECDSA (Elliptic Curve Digital Signature Algorithm) to ensures key messages(eg, KID) integrity and authenticity.
   + Using ECDH (Elliptic-curve Diffie–Hellman) to generate a shared AEAD key for private chat.
   + Using XChacha20Poly1305 to encrypt all messages of all chat types.
   + Using pure-rust cryptography implementation to provide fast & safe E2EE feature.
+  + Memory Safety: Rust prevents buffer overflows and memory vulnerabilities
+  + Anti-Replay: HMAC timestamps prevent message replay attacks
 
 > ECDSA & ECDH implementation: Curve25519 (from [dalek-cryptography](https://github.com/dalek-cryptography))
 > XChacha20Poly1305 implementaion: [RustCrypto](https://github.com/RustCrypto)
 
 - __Decentralized__
+  + Each node act as a peer, and you can roaming to other discovered peer by DHT.
+  + Users can only chat in the same relay peer, cross-relay chat is not supported.
+  + Optimized DHT routing for fast peer discovery based on Mainline DHT.
+  + Global Relay Mesh: Worldwide network of relay nodes ensures connectivity anywhere
+  - Censorship Resistance: Relay network adapts around blocked or compromised nodes
 
--
+## Technical Stack
+- Rust: Tokio ecosystem, WebSocket, Cryptography, Mainline DHT
+- Javascript: SolidJS, WebAssembly, MessagePack, IndexedDB
+
 ### 🔐 **Uncompromising Anonymity**
 - **Smart Relay Network**: Messages routed through multiple encrypted relay nodes
 - **Zero Central Authority**: No servers, no single points of failure or surveillance
@@ -47,20 +55,11 @@
 - **DHT Discovery**: Find relay nodes without exposing your location or identity
 - **No Registration**: Start relaying and chatting instantly - zero personal data required
 
-### 🛡️ **Military-Grade Security**
-- **End-to-End Encryption**: AES-GCM & ChaCha20-Poly1305 with perfect forward secrecy
-- **ECDH Key Exchange**: Quantum-resistant elliptic curve cryptography
-- **Digital Signatures**: ECDSA ensures message integrity and authenticity
-- **Encrypted Storage**: Local data protected with ReDB encryption
-- **Memory Safety**: Rust prevents buffer overflows and memory vulnerabilities
-- **Anti-Replay**: HMAC timestamps prevent message replay attacks
-
 ### ⚡ **Blazing Fast Performance**
 - **Rust-Powered**: Zero-cost abstractions and native performance
 - **Async Architecture**: Tokio-based for handling thousands of connections
 - **Instant Messaging**: WebSocket for real-time, low-latency communication
 - **Lightweight**: Minimal resource usage, runs smoothly on any device
-- **Efficient P2P**: Optimized DHT routing for fast peer discovery
 
 ### 🎯 **Effortless User Experience**
 - **One-Click Start**: Single command deployment with zero configuration
@@ -69,7 +68,7 @@
 - **Drag & Drop**: Seamless file sharing up to 20MB per file
 - **Intuitive Design**: Clean, distraction-free interface focused on conversation
 
-## 🌟 Core Features
+## Other Features
 
 ### 💬 **Anonymous Communication Modes**
 - **🏛️ Public Relay Rooms**: Join community discussions through encrypted relay networks
@@ -79,12 +78,6 @@
 - **🔇 Ghost Mode**: Ultra-anonymous ephemeral sessions with maximum relay hops
 
 ### 🌐 **Intelligent Relay Network**
-- **🔄 Multi-Hop Routing**: Messages bounce through multiple relay nodes for maximum anonymity
-- **🔍 Smart Node Discovery**: Mainline DHT automatically finds the best relay paths
-- **🏎️ High-Throughput Relaying**: Each node can relay thousands of messages simultaneously
-- **🌍 Global Relay Mesh**: Worldwide network of relay nodes ensures connectivity anywhere
-- **📊 Dynamic Load Balancing**: Traffic automatically routes through the fastest available relays
-- **🛡️ Censorship Resistance**: Relay network adapts around blocked or compromised nodes
 
 ### 🛠️ **Developer & User Friendly**
 - **⚡ Zero Configuration**: Works perfectly with default settings
@@ -186,19 +179,7 @@ request_timeout = 5000                # Request timeout (milliseconds)
 - **🌐 Mainline DHT**: Proven P2P protocol for discovering and maintaining relay node network
 - **🎨 MessagePack**: Ultra-efficient serialization minimizes relay bandwidth overhead
 
-### 🚀 **Blazing Frontend**
-- **⚡ SolidJS**: Ultra-reactive UI with minimal overhead
-- **💻 WebAssembly**: Native-speed cryptography in the browser
-- **📎 IndexedDB**: Secure client-side data persistence
-- **🔄 WebSocket**: Full-duplex real-time communication with auto-reconnect
-- **🎯 Vite**: Lightning-fast development and optimized builds
 
-### 🔒 **Cryptographic Arsenal**
-- **🔐 AES-GCM**: Industry-standard authenticated encryption (256-bit keys)
-- **⚡ ChaCha20-Poly1305**: High-speed stream cipher for mobile devices
-- **🔑 ECDH P-256**: Quantum-resistant key exchange protocol
-- **✍️ ECDSA**: Digital signatures for message authenticity
-- **🛡️ HMAC-SHA256**: Message authentication and integrity verification
 - **🔄 Perfect Forward Secrecy**: Each session uses unique ephemeral keys
 
 ## 🛡️ Bulletproof Security Model
@@ -248,11 +229,6 @@ request_timeout = 5000                # Request timeout (milliseconds)
 > 🎆 **Help us build the future of private communication!** Every contribution matters.
 
 ### 🚀 **Contributing**
-1. **🍴 Fork** the project and create your feature branch
-2. **✨ Code** with passion - follow Rust best practices
-3. **🧪 Test** thoroughly with `cargo test`
-4. **🎨 Format** code with `cargo fmt`
-5. **📝 Submit PR** with detailed description
 
 ```bash
 # Development setup
