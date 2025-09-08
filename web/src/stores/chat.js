@@ -64,7 +64,7 @@ export function room_id(rm) {
 export function load_room(type, id_b64) { 
   return type==0?Room.get(id_b64) : priv_chat(id_b64);
 }
-//type: 0 for pub-room, 1 for priv-room
+//type: 0 for pub-room, 1 for priv-chats
 export function chg_room(rm) { 
   $chat_ctx('curr_room', reconcile(rm)); 
 }
@@ -73,7 +73,6 @@ export const rmk = (rm) => {
   if(!rm.rmk) return ;
   let rm_id = room_id(rm);
   if(!chat_ctx.rmk_cache[rm_id]){
-    // $chat_store('rmk_cache', produce(rc=>{rc[rm_id] = new Cipher(rm.rmk)}) );
     $chat_ctx('rmk_cache', rc=>({...rc, [rm_id]:new Cipher(rm.rmk) }) );
   }
   return chat_ctx.rmk_cache[rm_id];
