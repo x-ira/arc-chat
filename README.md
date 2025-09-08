@@ -6,14 +6,13 @@
 > 
 >  **How it works**: Your messages are relayed through multiple encrypted hops across our peer-to-peer network, ensuring complete anonymity and censorship resistance.
 ## Demo: [Mitrá - मित्र](http://54.183.244.205:1024/)
-## 🚀 Why Choose Arc?
-### Features
-- Anonymous:
+## Core Features
+- __Anonymous__:
   + NO user registration, No email or phone number is required.
   + We use a key pair based ID, which called KID, a 32-byte public key. saved locally.
   + NO persistant messages on server except a few cached encrypted meida messages for speed up.
   
-- Progressive:
+- __Progressive__:
   + There are 3 types of chat (see below),  you can choose different security level of chat as you wish.
 
 
@@ -26,9 +25,9 @@
 | Encrypted Messages  | ✓          | ✓             | ✓            |
 | Command             | ✓          | ✓             | ✓            |
 
-*Each member of Secured Group share a same private key that the server DOESN'T know it.
+>*Each member of Secured Group share a same private key that the server DOESN'T know it.
 
-- Security
+- __Security__
   + Using ECDSA (Elliptic Curve Digital Signature Algorithm) to sign key informations for exchange, eg, KID.
   + Using ECDH (Elliptic-curve Diffie–Hellman) to generate a shared AEAD key for private chat.
   + Using XChacha20Poly1305 to encrypt all messages of all chat types.
@@ -37,7 +36,7 @@
 > ECDSA & ECDH implementation: Curve25519 (from [dalek-cryptography](https://github.com/dalek-cryptography))
 > XChacha20Poly1305 implementaion: [RustCrypto](https://github.com/RustCrypto)
 
-- Decentralized
+- __Decentralized__
 
 -
 ### 🔐 **Uncompromising Anonymity**
