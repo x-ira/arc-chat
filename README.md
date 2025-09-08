@@ -15,6 +15,8 @@
   
 - Progressive:
   + There are 3 types of chat (see below),  you can choose different security level of chat as you wish.
+
+
 |                     | Open Group | Secured Group | Private Chat |
 |---------------------|------------|---------------|--------------|
 | E2EE                |            | ✓*            | ✓            |
