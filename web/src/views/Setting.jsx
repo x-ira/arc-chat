@@ -14,7 +14,6 @@ function Setting(){
     <div class="page_block">
       <p>Your nick name: &nbsp; {nick_now()} </p>
       <form>
-      
       <div>
         <Txt name="New nick name" bind={[nick_new, $nick_new]} tip="Nick name for all chats" />
         <Btn name="Set" bind={()=>{
@@ -33,7 +32,7 @@ function Setting(){
           }
         }} /> 
         <Btn name="Clear" bind={()=>{
-          del(Locker.key(), meta).then(r=>$msg('done'));
+          del('locker', meta).then(r=>$msg('done'));
         }} />
       </div>
 
@@ -46,7 +45,6 @@ function Setting(){
           del('priv_chats', meta).then(r=>$msg('done'));
         }} />
       </div>
-    
       </form>
       <div>{msg}</div>
     </div>

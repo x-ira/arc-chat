@@ -14,6 +14,7 @@ import { room, rmk, ecdh, save_priv_chat, update_priv_chat, ecdh_exchange, priv_
 import { set, get as find, clear, setMany } from 'idb-keyval';
 import { nanoid } from 'nanoid';
 import WebSocketClient from '../utils/ws';
+import _ from '../utils/notification';
 
 function RoomChat(props) {
   let nick = nick_name();
@@ -32,7 +33,7 @@ function RoomChat(props) {
   let msg_block; //el
   let wsc;
   let endpoint = `/ws/${nick}/k/${b64_url(dsa.verify_key)}`;
-  const init = () =>{
+  const init_wsc = () =>{
     wsc = new WebSocketClient(endpoint);
     wsc.on('#connected', ()=>{ //refresh room after (re)connected
      $conn_state();
@@ -53,6 +54,9 @@ function RoomChat(props) {
         let priv_dist = type == 1 ? u8_b64(ws_msg.PrivChat.kid): undefined;
         let msg = type == 0 ? ws_msg.Chat.msg : ws_msg.PrivChat.msg;
         let src = type == 0 ? ws_msg.Chat.room : priv_src; //for convenience
+        if (document.visibilityState === 'hidden' && type == 1) {
+           notify.show('Arc-Chat',`A private ${msg.kind} msg from ${msg.nick}`);
+        }
         if(type == 1) {
           msg.state = ws_msg.PrivChat.state; //state>0 & isMedia, may need update Media TODO
           let msg_rm = msg_room(priv_dist, priv_src);
@@ -231,8 +235,15 @@ function RoomChat(props) {
       wsc.emit(ws_msg);
     });
   }
-  onMount(()=>init());
-  onCleanup(() =>wsc.close());
+  onMount(()=>{
+    init_wsc();
+    if(notify.isSupported) {
+      notify.requestPermission();
+    }
+  });
+  onCleanup(() =>{
+    wsc.close();
+  });
   createEffect(() =>{
     if(room().rmk) { //rmk change means room changed!!
       refresh_room();

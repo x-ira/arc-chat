@@ -20,7 +20,7 @@ function RoomQuery(props) {
     }
   };
   const join = async ()=>{
-    if(!pin()) return ;
+    if(sltRoom()[2] == 'e' && !pin()) return ;
     let rsp = await post('api/join_room', {rm_id: sltRoom()[3], rm_kind: RoomKind.to_kind(sltRoom()[2], pin())});
     if(!rsp.ok) {
       $msg(await rsp.text());

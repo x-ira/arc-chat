@@ -153,17 +153,14 @@ class Locker{
     this.locked = locked;
     this.pin_hash = pin_hash;
   }
-  static key() {
-    return dsa.skid;
-  }
   static init(pin) {
     let pin_hash = hash_b64(pin);
     let locker = new Locker(false, pin_hash);
-    set(Locker.key(), locker, meta);
+    set('locker', locker, meta);
     return true;
   }
   static async load() {
-    let lk = await find(Locker.key(), meta);
+    let lk = await find('locker', meta);
     return lk;
   }
   static verify(locker, pin){
@@ -171,8 +168,7 @@ class Locker{
   }
   static set_lock(locker, state) {
     locker.locked = state;
-    let key = Locker.key();
-    set(key, locker, meta);
+    set('locker', locker, meta);
   }
 }
 function break_time(curr_ts, curr_i, msgs){

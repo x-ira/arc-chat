@@ -171,15 +171,6 @@ request_timeout = 5000                # Request timeout (milliseconds)
 
 > 🚀 **Built for Speed**: Arc leverages cutting-edge technology for maximum performance and security
 
-### ⚡ **High-Performance Relay Engine**
-- **🦀 Rust Core**: Zero-cost abstractions enabling ultra-fast message relay processing
-- **🌐 Axum Framework**: Async web framework optimized for high-throughput relay operations
-- **🚄 Tokio Runtime**: Handles thousands of concurrent relay connections simultaneously
-- **💾 Encrypted ReDB**: Lightning-fast local storage for relay routing tables and message queues
-- **🌐 Mainline DHT**: Proven P2P protocol for discovering and maintaining relay node network
-- **🎨 MessagePack**: Ultra-efficient serialization minimizes relay bandwidth overhead
-
-
 - **🔄 Perfect Forward Secrecy**: Each session uses unique ephemeral keys
 
 ## 🛡️ Bulletproof Security Model

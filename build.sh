@@ -10,6 +10,8 @@ cargo b --bin $PROJECT --target=$TARGET -r
 # build web dist
 cd web; npm run build; cd ..
 
-# sync to server
-rsync -vzrtopg -e "ssh -p 22"  --exclude=.DS_Store \
-   $APP ./dist $1:~/apps/arc --delete
+# sync to server,
+# NOTES: when first sync maybe you need sync `./conf` to the server
+if [[ -n "$1" ]]; then
+rsync -vzrtopg -e "ssh -p 22"  --exclude=.DS_Store $APP ./dist $1:~/apps/arc --delete
+fi

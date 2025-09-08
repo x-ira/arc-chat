@@ -1,10 +1,10 @@
 import { A, useNavigate } from "@solidjs/router";
-import { Show,createEffect,createResource,createSignal,onMount } from "solid-js";
+import { Show,createEffect,createResource,createSignal } from "solid-js";
 import { Locker } from "../utils/main";
 
 function Header(){
   let [show_lock, $show_lock] = createSignal(false);
-  let [locker] = createResource(async () =>await Locker.load()); 
+  let [locker] = createResource(async () =>await Locker.load());
   const navi = useNavigate();
   createEffect(()=>{
     if(locker()) {
