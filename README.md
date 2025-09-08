@@ -7,7 +7,7 @@
 ## Demo: [Mitrá - मित्र](http://54.183.244.205:1024/)
 ## Core Features
 - __Anonymous__:
-  + NO user registration, No email or phone number is required.
+  + NO user registration or personal info required, No email or phone number is required.
   + We use a key pair based ID, which called KID, a 32-byte public key. saved locally.
   + NO persistant messages on server except a few cached encrypted meida messages for speed up.
   
@@ -37,29 +37,23 @@
 > XChacha20Poly1305 implementaion: [RustCrypto](https://github.com/RustCrypto)
 
 - __Decentralized__
-  + Each node act as a peer, and you can roaming to other discovered peer by DHT.
+  + Each node acting as a peer, and you can roaming to other discovered peer by DHT.
   + Users can only chat in the same relay peer, cross-relay chat is not supported.
   + Optimized DHT routing for fast peer discovery based on Mainline DHT.
   + Global Relay Mesh: Worldwide network of relay nodes ensures connectivity anywhere
   - Censorship Resistance: Relay network adapts around blocked or compromised nodes
 
+- __Simple but elegant__
+  + Multiple Modes: Run as relay node or a indepedent chat server
+  + No client installation, No login.
+  + Minimize core functions, no unnecessary distractions.
+  + Lightweight: Minimal resource usage, runs smoothly on any device
+  + Mobile ready.
+  
 ## Technical Stack
 - Rust: Tokio ecosystem, WebSocket, Cryptography, Mainline DHT
 - Javascript: SolidJS, WebAssembly, MessagePack, IndexedDB
 
-### 🔐 **Uncompromising Anonymity**
-- **Smart Relay Network**: Messages routed through multiple encrypted relay nodes
-- **Zero Central Authority**: No servers, no single points of failure or surveillance
-- **Cryptographic Identity**: Anonymous KID system - your real identity stays hidden
-- **Traffic Obfuscation**: Connection patterns masked through intelligent relay routing
-- **DHT Discovery**: Find relay nodes without exposing your location or identity
-- **No Registration**: Start relaying and chatting instantly - zero personal data required
-
-### ⚡ **Blazing Fast Performance**
-- **Rust-Powered**: Zero-cost abstractions and native performance
-- **Async Architecture**: Tokio-based for handling thousands of connections
-- **Instant Messaging**: WebSocket for real-time, low-latency communication
-- **Lightweight**: Minimal resource usage, runs smoothly on any device
 
 ### 🎯 **Effortless User Experience**
 - **One-Click Start**: Single command deployment with zero configuration
