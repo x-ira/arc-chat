@@ -247,7 +247,7 @@ function RoomChat(props) {
   }
   onMount(()=>{
     init_wsc();
-    if(notify.isSupported) {
+    if(notify.isSupported()) {
       notify.requestPermission();
     }
   });
