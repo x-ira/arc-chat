@@ -192,10 +192,10 @@ function RoomChat(props) {
   const txt_msg = (cont, wisper) =>{
     return !cont ? [] : chat_msg('Txt', cont, wisper);
   }
-  const blob_srcs = async (blobs) => {
+  const blob_conts = async (blobs) => {
     let srcs = [];
     if(room().type == 0) {
-      let rsp = await upload_files('/ws/upload', blobs, async file => await rmk().enc_blob(file));
+      let rsp = await upload_files('/ws/upload', blobs, async file =>await rmk().enc_blob(file));
       if(!rsp.ok) { alert(await rsp.text()); return [] }
       srcs = await rsp.json();
     }else{ //priv-chat
@@ -216,9 +216,9 @@ function RoomChat(props) {
   const img_msgs = async () =>{
     if(!slt_imgs()) return;
     let new_msgs = [];
-    let urls = await blob_srcs(slt_imgs());
-    for(const src of urls) {
-      let msg = chat_msg('Img', src);
+    let conts = await blob_conts(slt_imgs());
+    for(const cont of conts) {
+      let msg = chat_msg('Img', cont);
       new_msgs.push(msg);
     }
     $slt_imgs([]); //reset
@@ -226,8 +226,8 @@ function RoomChat(props) {
   }
   const voi_msg = async () =>{
     if(!voi()) return;
-    let src = (await blob_srcs([voi()]))[0]; // Don't make stupid mistakes anymore.   (await fn())[0]
-    let msg = chat_msg('Voi',src);
+    let cont = (await blob_conts([voi()]))[0]; // Don't make stupid mistakes anymore.   (await fn())[0]
+    let msg = chat_msg('Voi',cont);
     $voi(null); //reset
     return [msg]; //for consitence
   }

@@ -9,16 +9,18 @@ const MediaMsg = ({m,blob_urls}) => { //inner component, for img & voi
   let audio_el;
   const [data] = createResource(async () => {
     let cont = rmk().dec_u8(m.cont);
-    let type = m.kind == 'Img' ? 'image/png' : 'audio/webm'; // '*' not work!
     let data;
+    let type; //cont-type
     let file_name;
     
     if(room().type == 0) {
-      let rsp = await fetch(cont);
-      file_name = cont.split('/')[2]; // res/{res_type}/<file_name>
+      let [url, cont_type] = cont.split('|');
+      let rsp = await fetch(url);
+      file_name = url.split('/')[2]; // res/{res_type}/<file_name>
       if(!rsp.ok) { return Promise.reject("Load file failed"); }
       // let data_u8 = await rsp.bytes(); //simple than arrayBuffer, but too new for old device
       data = await rsp.arrayBuffer();
+      type = cont_type;
     }else{ //priv-chat
       let msg_rm = msg_room(room_id(), m.kid);
       let key = [msg_rm, cont];

@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onCleanup, onMount } from 'solid-js';
+import { createEffect, createSignal, onCleanup, onMount, Switch, Match } from 'solid-js';
 import  './Voice.css';
 import { Lnk } from '../comps/Form';
 function update_animation(dist_state) {
@@ -33,7 +33,20 @@ function init_points(flow_cont) {
 }
 async function init_media($v){
   let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  const recorder = new MediaRecorder(stream);
+  
+  let options = {};
+  if (MediaRecorder.isTypeSupported('audio/mp4')) {  // ios
+    options.mimeType = 'audio/mp4';
+  } else if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+    options.mimeType = 'audio/webm;codecs=opus';
+  } else if (MediaRecorder.isTypeSupported('audio/webm')) { //chrome & firefox
+    options.mimeType = 'audio/webm';
+  }
+  
+  const recorder = new MediaRecorder(stream, options);
+  
+  // Log the actual format being used for debugging
+  console.log('Recording with mimeType:', recorder.mimeType);
 
   //invoked when .stop() is called 
   recorder.ondataavailable = async e => $v(e.data);

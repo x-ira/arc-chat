@@ -1,6 +1,5 @@
 use std::{collections::{HashSet, VecDeque}, fs::{self, File}, io::Write, sync::Arc};
 use air::conf::cfg_or;
-use base::util::rand;
 use base64ct::{Base64, Encoding};
 use futures::SinkExt;
 use tokio::sync::{broadcast::{self, Sender}, mpsc::{self}};
@@ -30,23 +29,25 @@ async fn upload(mut multipart: Multipart) -> AppResult<Json<Vec<String>>>{ //onl
         if let Some(f_name) = field.file_name(){
             // println!("{:?}", field.content_type());
             let mut res_type = "other".to_string();
-            if let Some(cont_type) = &field.content_type()
-                && let Some((t,_)) = cont_type.split_once('/') {
-                    res_type = t.to_string();
-                }
+            let cont_type = match field.content_type()  {
+                Some(cont_type) => { cont_type.to_string() }
+                _ => { continue }
+            };
+            if let Some((t,_)) = cont_type.split_once('/') {
+                res_type = t.to_string();
+            }
             let file_name = f_name.to_string();
             let data = field.bytes().await?;
             if data.len() > MAX_FILE_SIZE * 1024 * 1024 {
                return Err(AppErr::UploadFail(format!("File is too large, size should less than {MAX_FILE_SIZE}M.")));
             }
             // println!("Length of `{}` is {} bytes", file_name, data.len());
-            let rnd_code = rand::rnd_in(10000);
             let path = format!("res/{res_type}");
-            let url = format!("{path}/{rnd_code}_{file_name}");
+            let dist_file = format!("{path}/{file_name}");
             fs::create_dir_all(path)?;
-            let mut file = File::create(url.clone())?;
+            let mut file = File::create(dist_file.clone())?;
             file.write_all(&data)?;
-            file_urls.push(url);
+            file_urls.push([dist_file, cont_type].join("|"));
         }
     }
     Ok(Json(file_urls))
