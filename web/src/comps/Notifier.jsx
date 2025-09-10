@@ -5,7 +5,8 @@ import { Room, Cipher } from "../utils/main";
 import { room, chg_room, rmk, load_room } from "../stores/chat";
 
 export default function Notifier(props){
-  let [msg, $msg] = createSignal();
+  const [msg, $msg] = createSignal();
+  const [msgFrom, $msgFrom] = createSignal('');
   let im = props.incoming_msg;  // { type, src, msg }
   let interval = props.interval || 5000;
   const maxQueueSize = 100; 
@@ -60,11 +61,23 @@ export default function Notifier(props){
     is_active = false;
     queue = [];
   }
-  const msg_from = () => {
+  
+  const updateMsgFrom = async () => {
     let m = msg();
-    let at = m.type==0?`@${Room.get(m.src).name}`:'';
-    return `${m.msg.nick}${at}`;
-  }
+    if (!m) return;
+    let at = '';
+    if(m.type == 0) {
+      let dist_room = await Room.get(m.src);
+      at = `@${dist_room.name}`;
+    }
+    $msgFrom(`${m.msg.nick}${at}`);
+  };
+  
+  createEffect(() => {
+    if (msg()) {
+      updateMsgFrom();
+    }
+  });
   const dec_cont = () => {
     let m = msg();
     let rm = load_room(m.type, m.src);
@@ -76,7 +89,7 @@ export default function Notifier(props){
     <Show when={msg()}>
     <div class="notifier">
         <span>
-          <Lnk  bind={change_room} name={msg_from} title="Go to the room to view" class="link"/>: &nbsp;
+          <Lnk bind={change_room} name={msgFrom} title="Go to the room to view" class="link"/>: &nbsp;
           <Show when={msg().msg.kind == 'Txt'} fallback={<span>&lt; A {msg().msg.kind} Message &gt;</span>} >
             {dec_cont}
           </Show>

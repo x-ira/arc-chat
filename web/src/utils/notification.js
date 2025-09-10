@@ -1,6 +1,8 @@
 class WebNotifier {
     constructor() {
-        this.permission = Notification.permission;
+        // 某些移动浏览器（如移动端 Edge/Chrome）可能不暴露 Notification，避免在构造时直接访问
+        const hasNotification = typeof window !== 'undefined' && 'Notification' in window && typeof Notification !== 'undefined';
+        this.permission = hasNotification && typeof Notification.permission === 'string' ? Notification.permission : 'default';
         this.defaultOptions = {
             icon: null,
             badge: null,
@@ -85,13 +87,21 @@ class WebNotifier {
      * 显示简单通知
      */
     async show(title, body) {
-        return this.show_with(title, { body,
+        // 检测是否为移动设备
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        const options = {
+            body,
             // icon: '/bell.png',
-            requireInteraction: true,
-            vibrate: [200, 100, 200],
-            // onClick: () => console.log('点击'),
-            // onClose: () => console.log('关闭')
-        });
+            requireInteraction: !isMobile, // 移动端不要求交互
+        };
+        
+        // 只在支持振动的设备上添加振动
+        if ('vibrate' in navigator && isMobile) {
+            options.vibrate = [200, 100, 200];
+        }
+        
+        return this.show_with(title, options);
     }
     /**
      * 获取当前权限状态
@@ -111,13 +121,9 @@ class WebNotifier {
 
 const web_notifier = new WebNotifier();
 window.notify = {
-    // 检查支持
     isSupported: () => web_notifier.isSupported(),
-    // 请求权限
     requestPermission: () => web_notifier.requestPermission(),
-    // 显示简单通知
     show: (title, body) => web_notifier.show(title, body),
-    // 高级用法
     advanced: web_notifier
 };
 
