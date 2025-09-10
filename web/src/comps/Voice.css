@@ -1,10 +1,10 @@
 .voi_container {
   display: inline-block;
   position: relative;
+  font-size: 15px;
   margin: 0px 5px;
   width: 64%;
   max-width: 300px;
-  height: 1.5rem;
   border: 1px solid #999;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 2px;
