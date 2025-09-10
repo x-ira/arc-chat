@@ -5,5 +5,5 @@
 /db
 /res
 .DS_Store
-.tar.gz
-.tar
+*.tar.gz
+*.tar

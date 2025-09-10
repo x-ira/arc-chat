@@ -1,4 +1,4 @@
-# 🛡️ Arc - **A**nonymous **R**elay **C**hat
+# Arc - Anonymous Relay Chat
 
 **Arc** (**A**nonymous **R**elay **C**hat / **匿**名 **中**继 **聊**天) 是新型的**零信任**、**渐进式**通讯应用.为您提供的匿名的、且安全的在聊天服务, 简洁且高性能。
 

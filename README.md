@@ -5,6 +5,7 @@
 >  **Mission**: Anonymous communication through secure relay networks - no servers, no logs, no compromise.
 > 
 ## Demo: [Mitrá - मित्र](http://54.183.244.205:1024/)
+## [中文介绍](https://github.com/x-ira/arc-chat/blob/main/README_CN.md)
 ## Core Features
 - __Anonymous__:
   + NO user registration or personal info required, No email or phone number is required.
