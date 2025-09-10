@@ -1,7 +1,8 @@
 import { A, useNavigate } from "@solidjs/router";
 import { Match, Show,Switch,createEffect,createResource,createSignal } from "solid-js";
 import { Locker } from "../utils/main";
-import { is_open, is_mobile } from "../stores/chat";
+import { is_open, is_mobile, has_chats } from "../stores/chat";
+import { hash_b64 } from "xira-crypto-wasm";
 
 function Header(){
   let [show_lock, $show_lock] = createSignal(false);
@@ -23,10 +24,10 @@ function Header(){
       <A href="/" target="_self">Home</A> |&nbsp;
       
     <Switch>
-      <Match when={!is_mobile() || is_open()} >
+      <Match when={has_chats() && (!is_mobile() || is_open())} >
         <A href="/chat" target="_self">Chats</A> |&nbsp;
       </Match>
-      <Match when={is_mobile() && !is_open()} >
+      <Match when={has_chats() && is_mobile() && !is_open()} >
         <a onclick={()=>document.getElementsByClassName('sidebar-toggle')[0].click()}>Chats</a> |&nbsp;
       </Match>
     </Switch>

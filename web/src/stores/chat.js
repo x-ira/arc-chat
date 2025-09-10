@@ -10,7 +10,6 @@ const [chat_ctx, $chat_ctx] = createStore({
   joind_rooms: await Room.list(),
   priv_chats: await PrivChat.list(),
 });
-
 const [sys_ctx, $sys_ctx] = createStore({
   is_open: true, // sidebar
   is_mobile: false,
@@ -58,7 +57,7 @@ export function update_priv_chat(kid, state) {
   let curr_room = chat_ctx.curr_room;
   if(curr_room.type == 1 && curr_room.kid == kid) { // when curr_room is priv_chat, should refresh room
     if(state == 2 || state == 4) { // decline
-      $chat_ctx('curr_room', joined_rooms()[0]); 
+      $chat_ctx('curr_room', first_chat()); 
     }else{ //agree
       $chat_ctx('curr_room', "state", state);  //trigger room() effect!
     }
@@ -77,6 +76,12 @@ export const joined_rooms = () => {
 }
 export const joined_room = (id) => {
   return chat_ctx.joind_rooms.find(rm => rm.id == id);
+}
+export const has_chats = () => {
+  return joined_rooms().length > 0 || priv_chats().length > 0
+}
+export const first_chat = () => {
+  return joined_rooms()[0] ?? priv_chats()[0]
 }
 export function load_room(type, id_b64) { 
   return type==0?joined_room(id_b64) : priv_chat(id_b64);

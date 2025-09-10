@@ -1,9 +1,11 @@
+
+import { useNavigate } from "@solidjs/router";
+import { createSignal, For } from 'solid-js';
 import {Btn, Txt, Pwd, Lnk} from '../comps/Form';
 import {Header, Footer} from '../comps/Base';
 import { ab_b64, get, post } from '../utils/app';
-import { useNavigate } from "@solidjs/router";
-import { createSignal, For } from 'solid-js';
 import { Room, RoomKind, Cipher } from '../utils/main';
+
 function RoomQuery(props) {
   let [kw, $kw] = createSignal('');
   let [pin, $pin] = createSignal('');
@@ -35,8 +37,9 @@ function RoomQuery(props) {
       room.type = 0; // pub-room, 1 for private-chat
       delete room.salt;
       delete room.token;
-      await Room.join(room);
-      navi('/chat', {replace: true});
+      if(await Room.join(room)){
+        window.location = '/chat'; //need refresh page 
+      }
     }
   };
   return (

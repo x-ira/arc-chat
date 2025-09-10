@@ -50,7 +50,8 @@ class Room{
     }else{
       joined_rooms.push(room);
     }
-    await set("joined_rooms", joined_rooms, meta); 
+    await set("joined_rooms", joined_rooms, meta);
+    return true;
   }
   static async list(){ //reverse for latest joined
     let rooms = await find("joined_rooms", meta);

@@ -1,7 +1,7 @@
 import './Sidebar.css';
 import { createSignal, For, onMount, onCleanup, createEffect, createResource } from 'solid-js';
 import { PrivChat, Room } from '../utils/main';
-import { chg_room, priv_chats, joined_rooms, room, set_mobile, is_mobile, is_open, set_open } from '../stores/chat';
+import { chg_room, priv_chats, joined_rooms, room, set_mobile, is_mobile, is_open, set_open, first_chat } from '../stores/chat';
 
 function Sidebar(props) {
   const [actived, $actived] = createSignal();
@@ -21,7 +21,7 @@ function Sidebar(props) {
   });
   createEffect(()=>{
     if(!room().rmk) {
-      chg_room(joined_rooms()[0]); //init 1st room
+      chg_room(first_chat()); //init 1st room
     }
   });
   createEffect(()=>{ //set actived
