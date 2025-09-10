@@ -84,7 +84,6 @@ footer{
   text-align:center;
   padding: 3px 50px;
   border: 1px solid #999;
-  background: field;
   /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
   border-radius: 2px;
 }
@@ -229,7 +228,8 @@ hr {
     background: #022c31;
   }
   .msg_bar {
-    color: lightgray;
+    color: #c271b7;
+    background: #5c0528;
   }
   hr{
     border-color: #700789;
