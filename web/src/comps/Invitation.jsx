@@ -9,7 +9,7 @@ export default function Invitation(props){
   let inv = room();
   const tracking = async (state) => {
     let it = await inv_track_sign(b64_u8(inv.kid), nick_name(), state); //inform partner
-    if(props.on_track) props.on_track({InviteTracking: it});
+    if(props.on_track) props.on_track({InviteTracking: it}); //notify partner
     update_priv_chat(inv.kid, state);
   };
   return (

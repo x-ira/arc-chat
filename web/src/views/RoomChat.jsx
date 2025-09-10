@@ -102,9 +102,9 @@ function RoomChat(props) {
         let it = ws_msg.InviteTracking;
         if(!inv_track_verify(it)) return; // verify track sign
         let cont;
-        if(it.state == 4) cont = `${it.by_nick} has cancelled the Priv-Chat invitaion.`;
-        if(it.state == 5) cont = `${it.by_nick} has accepted your Priv-Chat invitaion.`;
-        if(it.state == 2) cont = `${it.by_nick} has declined your Priv-Chat invitaion.`;
+        if(it.state == 4) cont = `${it.by_nick} has cancelled the Priv-Chat invitation.`;
+        if(it.state == 5) cont = `${it.by_nick} has accepted your Priv-Chat invitation.`;
+        if(it.state == 2) cont = `${it.by_nick} has declined your Priv-Chat invitation.`;
         if(cont) {
          notify.show('Arc-Chat', cont);
         }

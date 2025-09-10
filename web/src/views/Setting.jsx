@@ -23,6 +23,18 @@ function Setting(){
             $msg('done');
         }} /> 
       </div>
+
+      <div>
+        <label>Web Notification:</label>
+        <Btn name="Enable" bind={()=>{
+          if(notify.isSupported()) {
+            notify.requestPermission();
+            $msg('done');
+          }else{
+            $msg('not supported');
+          }
+        }} /> 
+      </div>
     
       <div>
         <Pwd name="Set lock PIN" bind={$lock_pin} tip="PIN for app"/>
@@ -44,14 +56,14 @@ function Setting(){
           }
         }} />
         <Btn name="Clear Priv-Chats" bind={()=>{
-          if(confirm('All Priv-Chats history will be erased, Continue?')) {
+          if(confirm('All priv-chats history will be erased, Continue?')) {
             clear();
             del('priv_chats', meta).then(r=>$msg('done'));
           }
         }} />
       </div>
-      </form>
       <div>{msg}</div>
+      </form>
     </div>
   )  
 }

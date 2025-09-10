@@ -21,7 +21,7 @@ export const inv_sign = async (kid, by_nick, greeting) => {
 //verify msg_hash & sign
 export const inv_verify = (i) => {
   let inv_hash = hash([i.pub_key, dsa.vk, i.by_kid, new TextEncoder().encode(i.ts)]);
-  return Time.ts() > i.ts && Ecdsa.verify(i.by_kid, inv_hash, i.sign);
+  return Ecdsa.verify(i.by_kid, inv_hash, i.sign); // different device time may have a deviation, Time.ts() > i.ts
 }
 export const inv_track_sign = async (kid, by_nick, state) => {
   let by_kid = dsa.vk;
@@ -33,5 +33,5 @@ export const inv_track_sign = async (kid, by_nick, state) => {
 //verify msg_hash & sign for tracking
 export const inv_track_verify = (i) => {
   let inv_hash = hash([dsa.vk, i.by_kid, i.state, new TextEncoder().encode(i.ts)]);
-  return Time.ts() > i.ts && Ecdsa.verify(i.by_kid, inv_hash, i.sign);
+  return Ecdsa.verify(i.by_kid, inv_hash, i.sign);
 }
