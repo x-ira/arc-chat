@@ -4,7 +4,7 @@
 
 >  **Mission**: Anonymous communication through secure relay networks - no servers, no logs, no compromise.
 > 
-## Demo: [Mitrá - मित्र](http://54.183.244.205:1024/)
+## Demo: [Mitrá - मित्र](http://54.183.244.205:1930/)
 ## [中文介绍](https://github.com/x-ira/arc-chat/blob/main/README_CN.md)
 ## Core Features
 - __Anonymous__:
