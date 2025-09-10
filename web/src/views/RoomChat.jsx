@@ -6,7 +6,6 @@ import { Cipher, PrivChat, break_time, msg_room, nick_name } from '../utils/main
 import Notifier from '../comps/Notifier';
 import Invitation from '../comps/Invitation';
 import Voice from '../comps/Voice';
-import {SidebarCmd} from '../comps/Sidebar';
 import MediaMsg from '../comps/MediaMsg';
 import Command from '../comps/Command';
 import { inv_sign, inv_track_verify, inv_verify, m_io, me } from '../comps/ChatHelper';
@@ -77,6 +76,9 @@ function RoomChat(props) {
       }else if(ws_msg.Invite) {
         let inv = ws_msg.Invite.inv; 
         if(!inv_verify(inv)) return; // verify sign
+        if (document.visibilityState === 'hidden') {
+           notify.show('Arc-Chat',`Priv-Chat invitation from ${inv.by_nick}. ${inv.greeting?'Greeting:'+inv.greeting:''}`);
+        }
         let inv_kid_b64 = u8_b64(inv.by_kid);
         let pc = priv_chat(inv_kid_b64);
         if(!pc) {
@@ -99,12 +101,20 @@ function RoomChat(props) {
       }else if(ws_msg.InviteTracking) {
         let it = ws_msg.InviteTracking;
         if(!inv_track_verify(it)) return; // verify track sign
+        let cont;
+        if(it.state == 4) cont = `${it.by_nick} has cancelled the Priv-Chat invitaion.`;
+        if(it.state == 5) cont = `${it.by_nick} has accepted your Priv-Chat invitaion.`;
+        if(it.state == 2) cont = `${it.by_nick} has declined your Priv-Chat invitaion.`;
+        if(cont) {
+         notify.show('Arc-Chat', cont);
+        }
         update_priv_chat(u8_b64(it.by_kid), it.state);
       }
     });
   }
   const history_msgs = () => room().type == 0 ? remote_history() : local_history();
   const local_history = () => { //only for priv-chats
+    if(!room_id()) return ; //decline priv-chat case
     find(room_id()).then((his_msgs=[]) =>{
       let rest = rest_len() == undefined ? his_msgs.length:rest_len();
       if(rest == 0) return;
@@ -265,12 +275,11 @@ function RoomChat(props) {
         <Invitation on_track={it=>wsc.emit(it)}/>
       </Match>
       <Match when={room().type == 0 || room().state >= 5} >
-      <Notifier incoming_msg={notify_msg} />
-      { conn_state() && 
-      <div class="conn_state">{conn_state}</div>
-      }
-      <div><SidebarCmd show={props.show} /></div>
-      <div class="msg_block" ref={msg_block}>
+        <Notifier incoming_msg={notify_msg} />
+        { conn_state() && 
+        <div class="conn_state">{conn_state}</div>
+        }
+        <div class="msg_block" ref={msg_block}>
         <Show when={rest_len()} >
           <div class="info"><Lnk bind={history_msgs} name={`~ More History (${rest_len()}) ~`} /></div>
         </Show>

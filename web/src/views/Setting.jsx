@@ -2,7 +2,7 @@ import { createResource, createSignal, Show } from "solid-js";
 import {get,post} from '../utils/app';
 import { Locker, nick_name } from '../utils/main';
 import { Txt, Pwd, Btn } from "../comps/Form";
-import { del } from "idb-keyval";
+import { clear, del } from "idb-keyval";
 
 function Setting(){
   let [lock_pin, $lock_pin] = createSignal('');
@@ -39,10 +39,15 @@ function Setting(){
       <div>
         <label>Privacy:</label>
         <Btn name="Clear Joined Rooms" bind={()=>{
-          del('joined_rooms', meta).then(r=>$msg('done'));
+          if(confirm('Are you sure to clear joined rooms?')) {
+            del('joined_rooms', meta).then(r=>$msg('done'));
+          }
         }} />
         <Btn name="Clear Priv-Chats" bind={()=>{
-          del('priv_chats', meta).then(r=>$msg('done'));
+          if(confirm('All Priv-Chats history will be erased, Continue?')) {
+            clear();
+            del('priv_chats', meta).then(r=>$msg('done'));
+          }
         }} />
       </div>
       </form>

@@ -44,12 +44,6 @@ impl PartialEq for PubRoom {
         self.id == other.id
     }
 }
-// #[derive(Debug, Clone, Serialize, Deserialize)]
-// pub enum PrivChatMsgState {
-//     Normal,
-//     Offline, //Parter is offline,
-//     Rejected,
-// }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum WsMsg {
     Bye,
@@ -60,7 +54,7 @@ pub enum WsMsg {
     Stat(String), //room-id
     Invite{ kid: Kid, inv: Invitation}, //priv-chat
     Reply{ kid: Kid, inv: Invitation}, //priv-chat
-    InviteTracking { kid: Kid, by_kid: Kid, state: u8, sign: ByteBuf, ts:i64 }, //priv-chat
+    InviteTracking { kid: Kid, by_kid: Kid, by_nick: String, state: u8, sign: ByteBuf, ts:i64 }, //priv-chat
     Welcome { nick: String, kid: Kid },
     Rsp(String),
 }

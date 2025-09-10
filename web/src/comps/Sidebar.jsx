@@ -1,51 +1,42 @@
 import './Sidebar.css';
 import { createSignal, For, onMount, onCleanup, createEffect, createResource } from 'solid-js';
-import { useNavigate } from '@solidjs/router';
 import { PrivChat, Room } from '../utils/main';
-import { chg_room, priv_chats, room } from '../stores/chat';
+import { chg_room, priv_chats, joined_rooms, room, set_mobile, is_mobile, is_open, set_open } from '../stores/chat';
 
 function Sidebar(props) {
-  const [isOpen, $isOpen] = createSignal(props.isOpen ?? true);
-  const [isMobile, $isMobile] = createSignal(false);
   const [actived, $actived] = createSignal();
-  let [joined_rooms] = createResource(async()=>Room.list());
   let mediaQueryList;
-
-  const navigate = useNavigate();
+  const controller = new AbortController();
+ 
   onMount(() => {
     mediaQueryList = window.matchMedia('(max-width: 768px)');
-    $isMobile(mediaQueryList.matches);
+    set_mobile(mediaQueryList.matches); //init
 
-    const listener = (event) => $isMobile(event.matches);
-    mediaQueryList.addEventListener('change', listener);
+    const listener = (event) => set_mobile(event.matches);
+    mediaQueryList.addEventListener('change', listener, { signal: controller.signal });
 
     onCleanup(() => {
-      mediaQueryList.removeEventListener('change', listener);
+      controller.abort(); 
     });
-
   });
   createEffect(()=>{
-    if(!joined_rooms.loading) {
-      handleItemClick(joined_rooms()[0]); //init 1st room
+    if(!room().rmk) {
+      chg_room(joined_rooms()[0]); //init 1st room
     }
   });
-  createEffect(()=>{
-    if(room().rmk != actived()) { //fix for delined priv-chat
+  createEffect(()=>{ //set actived
+    if(!room().rmk) {
+      $actived();
+    }else if(room().rmk != actived()) { 
       $actived(room().rmk);
     }
   });
-  
   const toggleSidebar = () => {
-    $isOpen(!isOpen());
-    props.onToggle?.(isOpen(), isMobile());
+    set_open(!is_open());
+    props.onToggle?.(is_open());
   };
-
   const handleItemClick = (item) => {
     if(!item) return ;
-    $actived(item.rmk);
-    if (item.path) {
-      navigate(item.path);
-    }
     chg_room(item);
     props.onItemClick?.(item);
   };
@@ -63,12 +54,12 @@ function Sidebar(props) {
     <>
       {/* Overlay for mobile */}
       <div 
-        class={`sidebar-overlay ${isOpen() ? 'show' : ''}`}
+        class={`sidebar-overlay ${is_open() ? 'show' : ''}`}
         onClick={toggleSidebar}
       />
       
       {/* Sidebar */}
-      <div class={`sidebar ${isOpen() ? 'open' : 'closed'}`}>
+      <div class={`sidebar ${is_open() ? 'open' : 'closed'}`}>
         {/* Header */}
         <div class="sidebar-header">
           <span 
@@ -76,7 +67,7 @@ function Sidebar(props) {
             onClick={toggleSidebar}
             aria-label="Toggle sidebar"
           >
-            {isOpen() ? '✕' : '☰'}
+            {is_open() ? '✕' : '☰'}
           </span>
         </div>
 
@@ -115,16 +106,4 @@ function Sidebar(props) {
   );
 }
 
-function SidebarCmd(props){
-  return (
-    <>
-      <Show when={ props.show() }>
-       <span on:click={()=>{
-         document.getElementsByClassName('sidebar-toggle')[0].click();
-       }}>☰ </span>
-      </Show>
-    </>
-  )
-}
-
-export {Sidebar, SidebarCmd};
+export {Sidebar};

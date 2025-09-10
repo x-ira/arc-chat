@@ -234,10 +234,15 @@ Report it on [GitHub Issues](https://github.com/x-ira/arc-chat/issues) - we fix 
 **License**: [MIT License](LICENSE) - Use freely, modify, distribute!
 
 ### ⚠️ **Responsible Use**
-- ✅ Use Arc for legal communications only
+- ✅ Use Arc for legal communications only, Not intended for illegal activities.
 - ✅ Respect local laws and regulations
 - ✅ Consider security auditing for critical use cases
 - 🚫 This is free software with no warranties
+
+## Security Reporting
+Private Issues: Email security issues privately
+Responsible Disclosure: Allow time for fixes before public disclosure
+Anonymity: Use anonymous communication channels when possible
 
 ---
 

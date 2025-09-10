@@ -7,8 +7,19 @@ const [chat_ctx, $chat_ctx] = createStore({
   curr_room: {},
   rmk_cache: {},
   ecdhs: {},
+  joind_rooms: await Room.list(),
   priv_chats: await PrivChat.list(),
 });
+
+const [sys_ctx, $sys_ctx] = createStore({
+  is_open: true, // sidebar
+  is_mobile: false,
+});
+
+export const is_open = () => sys_ctx.is_open;
+export const set_open = (val) => $sys_ctx('is_open', val);
+export const is_mobile = () => sys_ctx.is_mobile;
+export const set_mobile = (val) => $sys_ctx('is_mobile', val);
 
 export const ecdh = (kid) => {
   let k = u8_b64(kid); //b64 is suit for object prop
@@ -45,9 +56,9 @@ export function update_priv_chat(kid, state) {
     $chat_ctx('priv_chats', c=>c.kid == kid, 'state', state);
   }
   let curr_room = chat_ctx.curr_room;
-  if(curr_room.type == 1 && curr_room.kid == kid) { // when curr_room == priv_chat, should refresh room
+  if(curr_room.type == 1 && curr_room.kid == kid) { // when curr_room is priv_chat, should refresh room
     if(state == 2 || state == 4) { // decline
-      $chat_ctx('curr_room', reconcile(Room.get())); 
+      $chat_ctx('curr_room', joined_rooms()[0]); 
     }else{ //agree
       $chat_ctx('curr_room', "state", state);  //trigger room() effect!
     }
@@ -61,8 +72,14 @@ export function room_id(rm) {
   rm = rm || (chat_ctx.curr_room); //stop tracking
   return rm.type == 0 ? rm.id : rm.kid;
 }
+export const joined_rooms = () => {
+  return chat_ctx.joind_rooms;
+}
+export const joined_room = (id) => {
+  return chat_ctx.joind_rooms.find(rm => rm.id == id);
+}
 export function load_room(type, id_b64) { 
-  return type==0?Room.get(id_b64) : priv_chat(id_b64);
+  return type==0?joined_room(id_b64) : priv_chat(id_b64);
 }
 //type: 0 for pub-room, 1 for priv-chats
 export function chg_room(rm) { 

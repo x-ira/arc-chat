@@ -27,7 +27,7 @@ const ecdsa = async () => {
 }
 window.dsa = await ecdsa();
 /// type: 1,
-// state: 0: pending, 1: waitting, 2: declined, 3: expired, 4. cancelled, 5. agreed
+// state: 0: pending, 1: waitting, 2: declined, 3: expired, 4. cancelled, 5. accepted
 class PrivChat{
   static async save(priv_chats) {
     await set('priv_chats', unwrap(priv_chats), meta);
@@ -57,7 +57,7 @@ class Room{
     return rooms ? rooms.reverse() : [];
   }
   static async get(room_id) {
-    let joined_rooms = await this.list();
+    const joined_rooms = await this.list();
     if(!room_id) return joined_rooms[0];
     return joined_rooms.find(rm => rm.id == room_id);
   }

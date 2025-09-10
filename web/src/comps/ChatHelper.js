@@ -23,9 +23,9 @@ export const inv_verify = (i) => {
   let inv_hash = hash([i.pub_key, dsa.vk, i.by_kid, new TextEncoder().encode(i.ts)]);
   return Time.ts() > i.ts && Ecdsa.verify(i.by_kid, inv_hash, i.sign);
 }
-export const inv_track_sign = async (kid, state) => {
+export const inv_track_sign = async (kid, by_nick, state) => {
   let by_kid = dsa.vk;
-  let i = {kid, ts: Time.ts(), by_kid, state};
+  let i = {kid, ts: Time.ts(), by_kid, by_nick, state};
   let inv_hash = hash([kid, by_kid, state, new TextEncoder().encode(i.ts)]); //no need keeping order
   i.sign = await dsa.sign(inv_hash);
   return i;
