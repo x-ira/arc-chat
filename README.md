@@ -88,8 +88,7 @@
 ###  System Requirements
 - **Rust**: 1.70+ (for building from source)
 - **OS**: Windows, macOS, Linux, or any modern operating system
-- **RAM**: 50MB minimum (incredibly lightweight!)
-- **Storage**: ~10MB for the application
+- **RAM**: 10MB minimum (incredibly lightweight!)
 
 ###  Quick Installation
 
