@@ -77,14 +77,15 @@ footer{
 .msg_bar{
   display:inline-block;
   font-weight: normal;
-  font-size: 15px;
+  font-size: 14px;
   width: 40%;
   max-width: 200px;
   cursor: pointer;
-  margin: 1px 5px;
+  margin: 0px 5px;
   text-align:center;
-  padding: 3px 50px;
-  border: 1px solid #999;
+  padding: 4px 50px;
+  border: 1px solid #d1d1d1;
+  background: #e2eec2;
   /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
   border-radius: 2px;
 }
@@ -231,6 +232,7 @@ hr {
   .msg_bar {
     color: #b7ac22;
     background: #331f27;
+    border-color: #252c5c;
   }
   hr{
     border-color: #700789;

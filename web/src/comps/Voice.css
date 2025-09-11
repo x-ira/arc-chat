@@ -1,12 +1,14 @@
 .voi_container {
   display: inline-block;
   position: relative;
-  font-size: 15px;
+  font-size: 14px;
   margin: 0px 5px;
+  padding: 1px;
   width: 64%;
   max-width: 300px;
-  border: 1px solid #999;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #d1d1d1;
+  background: #e2eec2;
+  /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
   border-radius: 2px;
   cursor: pointer;
 }
@@ -32,7 +34,7 @@
   width: 2px;
   height: 7px;
   border-radius: 50%;
-  background-color: #9747FF; /* Initial color */
+  background-color: #12b0cc; /* Initial color */
   opacity: 0.8;
   animation-name: flowAnimation;
   animation-duration: 5s;
@@ -61,5 +63,9 @@
   .voi_container {
     color: #bb1dd2;
     background: #252127;
+    border-color: #252c5c;
+  }
+  .point {
+    background-color: #9937c7;
   }
 }
