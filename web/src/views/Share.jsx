@@ -1,12 +1,12 @@
 import { createSignal, createEffect } from 'solid-js';
 import {Btn, Txt, Pwd, Lnk} from '../comps/Form';
 import { Footer, Header } from '../comps/Base';
+import Join from '../comps/Join';
+import { url_params } from '../utils/main';
 
 function Share() {
-  let [pin, $pin] = createSignal('');
-
-  const join = async ()=>{
-  };
+  let params = url_params();
+  let [msg, $msg] = createSignal();
   return (
     <>
     <Header />
@@ -19,13 +19,12 @@ function Share() {
     <meta name="twitter:title" content="Arc Chat Invitation"/>
     <meta name="twitter:description" content="Anonymouse Relay Chat"/>
     <div class="page_block">
-      <div class="box">
-        share
+      <div>
+        <h3>~ Arc Chat Invitation ~</h3>
+        <h5>You are invited to join the below room: </h5>
       </div>
-      <form>
-      <Pwd name="PIN" bind={$pin}  on_enter={join} />
-      <Btn name="Join" bind={join} />  &nbsp; 
-      </form>
+      <Join rm_id={params.get('rm')} msg={$msg} />
+      {msg() && <div class="act_msg">{msg}</div> }
     </div>
     <Footer/>
     </>

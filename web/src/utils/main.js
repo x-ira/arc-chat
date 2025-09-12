@@ -208,4 +208,7 @@ function utf8_u8(str) {
 function u8_utf8(bytes){
   return new TextDecoder().decode(bytes);
 }
-export { Cipher, ecdsa, nick_name, Locker, break_time, PUB_ROOM_STATE, RoomKind, Room, PrivChat, msg_room, adapt_b64, adapt_u8 }
+function url_params() {
+  return new URLSearchParams(window.location.search);
+}
+export { Cipher, ecdsa, nick_name, Locker, url_params, break_time, PUB_ROOM_STATE, RoomKind, Room, PrivChat, msg_room, adapt_b64, adapt_u8 }

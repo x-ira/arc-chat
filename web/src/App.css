@@ -5,10 +5,11 @@
 td {
   text-align: center;
 }
-.msg {
+.act_msg {
   margin: 10px 5px;
   padding: 5px;
-  background: #f3f3f3;
+  background: #eaeca8;
+  border-radius: 2px;
 }
 .logo {
   animation: logo-spin infinite 20s linear;
