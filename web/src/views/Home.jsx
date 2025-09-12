@@ -41,19 +41,43 @@ function RoomQuery(props) {
       }
     }
   };
+  const share_room = async (id) => {
+    let url = `${location.href}share?rm=${id}`;
+    console.log(url);
+    if (navigator.share) { // 原生分享 API (移动端)
+      try{
+        copyToClipboard(url);
+      // await navigator.share({
+      //   title: 'Arc Chat Invitation',
+      //   text: 'Join our anonymous chat discussion',
+      //   url,
+      // });
+      }catch(e) { //fallback
+        copyToClipboard(url);
+      }
+    } else { //fallback
+      copyToClipboard(url);
+    }
+  }
+
+  const copyToClipboard = (url) => {
+    navigator.clipboard.writeText(url).then(() => {
+      $msg('Share link copied to clipboard!');
+    });
+  }
   return (
     <>
     <Header/>
     <div class="page_block">
-      <form>
+    <form>
       <Txt bind={$kw} on_enter={query} tip="keyword" class="keyword"/>
       <Btn name="Search" bind={query} />  &nbsp; 
-      </form>
-
+    </form>
     <table>
       <thead><tr>
         <th width="20%">Room</th>
         <th width="11%">Kind</th>
+        <th width="11%">Sharing</th>
         <th>Description</th>
       </tr></thead>
       <tbody>
@@ -61,6 +85,7 @@ function RoomQuery(props) {
         <tr>
           <td><a href="#" title={'Id: '+rm[3]} onclick={()=>$sltRoom(arr()[i()])}>{rm[0]}</a> <br/></td>
           <td>{RoomKind.get(rm[2])}</td>
+          <td><a href="#" title="share this room" onclick={()=>share_room(rm[3])}>Invite</a></td>
           <td>{rm[1]}</td>
         </tr>
         }</For>
@@ -75,8 +100,8 @@ function RoomQuery(props) {
           <Pwd tip="Pass Code"  bind={$pin}  />
         }
         <Btn name="Join" bind={join} /> &nbsp; <Lnk to={`/room/${sltRoom()[3]}`}  name="Admin" class="navi"/> &nbsp;
-        {msg}
       </>}
+      <div class="msg">{msg}</div>
       <p>
           <Lnk to="/room"  name="Create Room" class="navi"/> &nbsp;&nbsp;
           <Lnk to="/roam"  name="Roaming" class="navi"/> &nbsp;

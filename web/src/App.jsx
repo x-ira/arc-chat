@@ -5,12 +5,14 @@ import Roaming from './views/Roaming';
 import RoomMgr from './views/RoomMgr';
 import Guard from './views/Guard';
 import Lock from './views/Lock';
+import Share from './views/Share';
 
 function App() {
   return ( 
     <Router>
       <Route path="/" component={Home} />
       <Route path="/lock" component={Lock} />
+      <Route path="/share" component={Share} />
       <Route path="/chat/*" component={Guard} />
       <Route path="/roam" component={Roaming} />
       <Route path="/room/:id?" component={RoomMgr} />

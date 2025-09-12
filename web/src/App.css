@@ -2,6 +2,14 @@
   text-align: center;
 }
 
+td {
+  text-align: center;
+}
+.msg {
+  margin: 10px 5px;
+  padding: 5px;
+  background: #f3f3f3;
+}
 .logo {
   animation: logo-spin infinite 20s linear;
   height: 40vmin;

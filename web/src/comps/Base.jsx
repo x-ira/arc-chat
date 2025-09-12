@@ -22,7 +22,6 @@ function Header(){
     <header class="header">Mitrá - मित्र</header>
     <nav>
       <A href="/" target="_self">Home</A> |&nbsp;
-      
     <Switch>
       <Match when={has_chats() && (!is_mobile() || is_open())} >
         <A href="/chat" target="_self">Chats</A> |&nbsp;
