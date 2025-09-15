@@ -33,10 +33,10 @@ function RoomQuery(props) {
           url,
         });
       }catch(e) { //fallback
-        copyToClipboard(url);
+        clipboard_or_disp(url);
       }
     } else { //fallback
-      copyToClipboard(url);
+      clipboard_or_disp(url);
     }
   }
   const share_room = async (id) => {
@@ -50,16 +50,20 @@ function RoomQuery(props) {
           url,
         });
       }catch(e) { //fallback
-        copyToClipboard(url);
+        clipboard_or_disp(url);
       }
     } else { //fallback
-      copyToClipboard(url);
+      clipboard_or_disp(url);
     }
   }
-  const copyToClipboard = (url) => {
-    navigator.clipboard.writeText(url).then(() => {
-      $msg('Share link copied to clipboard!');
-    });
+  const clipboard_or_disp = (url) => {
+    if(navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        $msg('Share link copied to clipboard!');
+      });
+    }else{
+      $msg(`Share link: ${url}`);
+    }
   }
   return (
     <>
