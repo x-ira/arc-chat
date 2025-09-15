@@ -249,4 +249,7 @@ hr {
   .m_out.wisper .m_cont {
     background: #59033e;
   }
+  .act_msg {
+    background: #212f56;
+  }
 }
