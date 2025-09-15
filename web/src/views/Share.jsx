@@ -1,12 +1,17 @@
-import { createSignal, createEffect } from 'solid-js';
-import {Btn, Txt, Pwd, Lnk} from '../comps/Form';
+import { createSignal, createEffect, onMount } from 'solid-js';
 import { Footer, Header } from '../comps/Base';
 import Join from '../comps/Join';
-import { url_params } from '../utils/main';
+import { url_params, Room } from '../utils/main';
 
 function Share() {
   let params = url_params();
   let [msg, $msg] = createSignal();
+  onMount(async ()=>{
+    let id = params.get('rm');
+    if(await Room.get(id)){ //already joined, navigate to
+      window.location = `/chat?id=${id}&type=0`;
+    }
+  });
   return (
     <>
     <Header />
@@ -17,7 +22,7 @@ function Share() {
 
     <meta name="twitter:card" content="summary"/>
     <meta name="twitter:title" content="Arc Chat Invitation"/>
-    <meta name="twitter:description" content="Anonymouse Relay Chat"/>
+    <meta name="twitter:description" content="Anonymous Relay Chat"/>
     <div class="page_block">
       <div>
         <h3>~ Arc Chat Invitation ~</h3>

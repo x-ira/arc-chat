@@ -122,14 +122,14 @@ async fn join_room(State(state): AppState, Json(param): Json<JoinRoomParam>) -> 
     jrm.token.clear(); //without token
     Ok(Json(jrm))
 }
-async fn load_room(State(state): AppState, Path(rm_id): Path<String>) -> AppResult<Json<PubRoom>>{
+/// only for display
+async fn load_room(State(state): AppState, Path(rm_id): Path<String>) -> AppResult<Json<(String, String, char, String)>>{
     let rooms = state.store.find::<Vec<PubRoom>>(PUB_ROOMS_KEY)?;
-    if let Some(mut rm) = rooms.iter().find(|rm| rm.id == rm_id). cloned(){
-        rm.token.clear();
-        rm.salt.clear();
-        if let PubRoomKind::EncryptedGroup(ref mut pin) = rm.kind {
-            pin.clear();
-        }
+    if let Some(rm) = rooms.iter().find(|rm| rm.id == rm_id).cloned()
+        .map(|rm| {  
+           (rm.name, rm.desc, rm.kind.val(), rm.id)
+        }) 
+    {
         return Ok(Json(rm))
     }
     Err(AppErr::RoomNotFound(format!("Room not found with id: {rm_id}")))

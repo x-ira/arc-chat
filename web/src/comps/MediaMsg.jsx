@@ -43,6 +43,14 @@ const MediaMsg = ({m,blob_urls}) => { //inner component, for img & voi
           <img src={data()?.src} class="msg_img m_cont"/>
           </a>
         </Match>
+        <Match when={m.kind == 'File'} >
+          <div class={`${m_io(m)} txt`}>
+          { me(m) && m.state>0 && <span>{m.state==1?'❗':'🚫'}</span>} &nbsp;
+          <a href={data()?.src} download={data()?.file_name} class="download-link m_cont">
+            <i class="i-download"></i> {data()?.file_name.slice(8)}
+          </a>
+          </div>
+        </Match>
         <Match when={m.kind == 'Voi'} >
           <div class={`${m_io(m)} voi`} >
           { me(m) && m.state>0 && <span>{m.state==1?'❗':'🚫'}</span>} &nbsp;

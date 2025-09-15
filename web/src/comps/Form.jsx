@@ -32,6 +32,11 @@ function ImgSlt(props){
   props.tip = props.tip || 'Select image(s)';
   return File(props);
 }
+function FileSlt(props){
+  props.accept = props.accept || '*/*';
+  props.tip = props.tip || 'Select file(s)';
+  return File(props);
+}
 function File(props) {
   let [v, $v] = _bind(props.bind);
   let init_tip = props.tip || 'Select file(s)';
@@ -122,4 +127,4 @@ function Lnk(props) {
     <a href={to} target={target} onclick={props.bind} title={props.title} class={cls}>{props.name}</a>
   );
 }
-export { Txt, Cbx, Pwd, Btn, Slt, Lnk, File, ImgSlt}
+export { Txt, Cbx, Pwd, Btn, Slt, Lnk, File, ImgSlt, FileSlt}

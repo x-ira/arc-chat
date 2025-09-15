@@ -17,7 +17,7 @@ export default function Invitation(props){
     <div class="invite">
       { inv.state == 0 && <>
       <span>`{inv.nick}` invites you to join this private chat.</span>
-      <Btn bind={() => tracking(5)} name="Accept" class="inv_agree"/>
+      <Btn bind={() => tracking(9)} name="Accept" class="inv_agree"/>
       <Btn bind={() => tracking(2)} name="Decline" class="inv_decline"/>
         { inv.greeting &&
           <div class="greeting"> ‟ {inv.greeting} ‟</div>
@@ -25,6 +25,11 @@ export default function Invitation(props){
       </>}
       { inv.state == 1 && <>
         <span>Waiting for `{inv.nick}` to agree to join this private chat.</span>
+        <Btn bind={() => tracking(4)}  name="Cancel" class="inv_decline"/>
+      </>}
+    
+      { inv.state == 5 && <>
+        <span>Waiting for `{inv.nick}` to join this private chat.</span>
         <Btn bind={() => tracking(4)}  name="Cancel" class="inv_decline"/>
       </>}
     </div>

@@ -1,15 +1,15 @@
 import { createEffect, createSignal, For, Match, onCleanup, onMount, Show, Switch} from 'solid-js';
 import { createStore } from 'solid-js/store';
-import {Time,get,post,upload_files, b64_u8, b64_url, u8_b64} from '../utils/app';
-import {Btn, Slt, ImgSlt, Lnk} from '../comps/Form';
-import { Cipher, PrivChat, break_time, msg_room, nick_name } from '../utils/main';
+import {Time,get,post,upload_files, b64_u8, b64_url, u8_b64, b64_url_u8, b64_std} from '../utils/app';
+import {Btn, Slt, ImgSlt, Lnk, FileSlt} from '../comps/Form';
+import { Cipher, PrivChat, break_time, ecdh_exchange, expire_ecdh, msg_room, nick_name, url_params } from '../utils/main';
 import Notifier from '../comps/Notifier';
 import Invitation from '../comps/Invitation';
 import Voice from '../comps/Voice';
 import MediaMsg from '../comps/MediaMsg';
 import Command from '../comps/Command';
-import { inv_sign, inv_track_verify, inv_verify, m_io, me } from '../comps/ChatHelper';
-import { room, rmk, ecdh, save_priv_chat, update_priv_chat, ecdh_exchange, priv_chat, room_id } from '../stores/chat';
+import { engagement_sign, engagement_verify, inv_sign, inv_track_sign, inv_track_verify, inv_verify, m_io, me } from '../comps/ChatHelper';
+import { room, rmk, save_priv_chat, update_priv_chat, priv_chat, room_id } from '../stores/chat';
 import { set, get as find, clear, setMany } from 'idb-keyval';
 import { nanoid } from 'nanoid';
 import WebSocketClient from '../utils/ws';
@@ -19,6 +19,7 @@ function RoomChat(props) {
   let nick = nick_name();
   let [rest_len, $rest_len] = createSignal(false);
   let [slt_imgs, $slt_imgs] = createSignal();
+  let [slt_files, $slt_files] = createSignal();
   let [voi, $voi] = createSignal();
   let [msg_kind, $msg_kind] = createSignal('Txt');
   let [txt_cmd, $txt_cmd] = createSignal(null);
@@ -29,14 +30,36 @@ function RoomChat(props) {
   let blob_urls = [];
   let kid = dsa.kid;
   let skid = dsa.skid;
+  let params = url_params();
   let msg_block; //el
   let wsc;
   let endpoint = `/ws/${nick}/k/${b64_url(dsa.verify_key)}`;
+
+  const engagement = async ()=> {
+    if(params.get('skid')) { // try attend a priv-chat engagement
+      let decide = params.get('decide');
+      let skid = b64_std(params.get('skid'));
+      let kid = b64_u8(skid);
+      let by_nick = params.get('nick');
+      let pub_key = b64_url_u8(params.get('pub_key')); //tracker
+      if(decide == 0) {
+        let it = await inv_track_sign(kid, nick, 2, pub_key); //inform partner, declined
+        return wsc.emit({InviteTracking:it});
+      }
+      let eng = await engagement_sign(skid, kid, pub_key, nick); //always allow invite
+      let rmk = await ecdh_exchange(skid, pub_key, true);
+      save_priv_chat({
+        kid: skid, nick: by_nick, state: 5, type: 1, rmk:u8_b64(rmk), ts: eng.ts
+      });
+      wsc.emit({Engagement: eng});
+    }
+  }
   const init_wsc = () =>{
     wsc = new WebSocketClient(endpoint);
-    wsc.on('#connected', ()=>{ //refresh room after (re)connected
+    wsc.on('#connected', async ()=>{ //refresh room after (re)connected
      $conn_state();
      listen_room();
+     await engagement();
     });
     wsc.on('#reconnecting', ({attempt}) => {
       $conn_state('Try to connect the server...', attempt);
@@ -73,6 +96,23 @@ function RoomChat(props) {
         let media = ws_msg.Media;
         let key = [u8_b64(media.by_kid), media.id]; // no need cal msg_room, sender not send the media via ws
         set(key, media).catch(e=>console.error(e));
+      }else if(ws_msg.Engagement) {
+        let eng = ws_msg.Engagement; 
+        if(!engagement_verify(eng)) return; // verify sign
+        let rmk = await ecdh_exchange(eng.pub_key, eng.by_pub_key, true);
+        let state = 3; // missing or expired pub_key
+        if(rmk) { 
+          state = 9;
+          let by_skid = u8_b64(eng.by_kid);
+          save_priv_chat({
+            kid: by_skid, nick: eng.by_nick, state, type: 1, rmk:u8_b64(rmk), ts: eng.ts
+          });
+          if (document.visibilityState === 'hidden') {
+             notify.show('Arc-Chat',`${eng.by_nick} has accepted the Priv-Chat invitation.`);
+          }
+        }
+        let it = await inv_track_sign(eng.by_kid, eng.by_nick, state); //inform partner, expired Or success
+        wsc.emit({InviteTracking:it});
       }else if(ws_msg.Invite) {
         let inv = ws_msg.Invite.inv; 
         if(!inv_verify(inv)) return; // verify sign
@@ -83,28 +123,40 @@ function RoomChat(props) {
         let pc = priv_chat(inv_kid_b64);
         if(!pc) {
           let rep = await inv_sign(inv.by_kid, nick);
-          let rmk = ecdh_exchange(inv.by_kid,inv.pub_key);
+          let rmk = await ecdh_exchange(inv.by_kid,inv.pub_key, false);
           save_priv_chat({
             kid: inv_kid_b64, nick: inv.by_nick, state: 0, type: 1, rmk:u8_b64(rmk), greeting: inv.greeting, ts: inv.ts
           });
           wsc.emit({Reply: rep}); //reply to inviter
         }else if(pc.state < 2) { //already been invited, treat as agree
-          update_priv_chat(inv_kid_b64, 5);
+          update_priv_chat(inv_kid_b64, 9);
         }
       }else if(ws_msg.Reply) {
         let rep = ws_msg.Reply.inv; 
         if(!inv_verify(rep)) return; // verify sign
-        let rmk = ecdh_exchange(rep.by_kid,rep.pub_key);
-        save_priv_chat({
-          kid: u8_b64(rep.by_kid), nick: rep.by_nick, state: 1, type: 1, rmk:u8_b64(rmk), ts: rep.ts,
-        });
+        let rmk = await ecdh_exchange(rep.by_kid,rep.pub_key, true);
+        if(rmk) {
+          save_priv_chat({
+            kid: u8_b64(rep.by_kid), nick: rep.by_nick, state: 1, type: 1, rmk:u8_b64(rmk), ts: rep.ts,
+          });
+        }else{
+          update_priv_chat(rep.by_kid, 3);
+          let it = await inv_track_sign(rep.by_kid, rep.by_nick, 3); //inform partner, expired
+          wsc.emit({InviteTracking:it});
+        }
       }else if(ws_msg.InviteTracking) {
         let it = ws_msg.InviteTracking;
         if(!inv_track_verify(it)) return; // verify track sign
         let cont;
+        if(it.state == 2) {
+          cont = `${it.by_nick} has declined your Priv-Chat invitation.`;
+          if(it.tracker) {
+            await expire_ecdh(u8_b64(it.tracker));
+          }
+        }
+        if(it.state == 3) cont = `Priv-Chat invitation from ${it.by_nick} is expired.`;
         if(it.state == 4) cont = `${it.by_nick} has cancelled the Priv-Chat invitation.`;
-        if(it.state == 5) cont = `${it.by_nick} has accepted your Priv-Chat invitation.`;
-        if(it.state == 2) cont = `${it.by_nick} has declined your Priv-Chat invitation.`;
+        if(it.state == 9) cont = `${it.by_nick} has accepted your Priv-Chat invitation.`;
         if(cont) {
          notify.show('Arc-Chat', cont);
         }
@@ -166,8 +218,8 @@ function RoomChat(props) {
         break;
       case 'invite':
         let pc = priv_chat(params.kid);
-        if(pc && pc.state < 2) { //already been invited, treat as agree
-          update_priv_chat(params.kid, 5);
+        if(pc && pc.state < 2) { //already been invited, treat as accept
+          update_priv_chat(params.kid, 9);
         }
         let inv = await inv_sign(b64_u8(params.kid), nick, params.greeting); //always allow invite
         new_msg = {Invite: inv};
@@ -202,7 +254,7 @@ function RoomChat(props) {
       let medias = [];
       for(const file of blobs) {
         let data = await rmk().enc_file_u8(file);
-        let id = nanoid(12);  //hash may reduce duplicate
+        let id = `${nanoid(7)}-${file.name}`; //hash may reduce duplicate
         let cont_type = file.type;
         let media = { kid: b64_u8(room().kid), by_kid: kid, id, cont_type, data};
         wsc.emit({Media:media});
@@ -224,6 +276,17 @@ function RoomChat(props) {
     $slt_imgs([]); //reset
     return new_msgs;
   }
+  const file_msgs = async () =>{
+    if(!slt_files()) return;
+    let new_msgs = [];
+    let conts = await blob_conts(slt_files());
+    for(const cont of conts) {
+      let msg = chat_msg('File', cont);
+      new_msgs.push(msg);
+    }
+    slt_files([]); //reset
+    return new_msgs;
+  }
   const voi_msg = async () =>{
     if(!voi()) return;
     let cont = (await blob_conts([voi()]))[0]; // Don't make stupid mistakes anymore.   (await fn())[0]
@@ -237,6 +300,8 @@ function RoomChat(props) {
       new_msgs = await cmd_msg();
     }else if(msg_kind() == 'Img'){
       new_msgs = await img_msgs();
+    }else if(msg_kind() == 'File'){
+      new_msgs = await file_msgs();
     }else if(msg_kind() == 'Voi'){
       new_msgs = await voi_msg();
     }
@@ -271,10 +336,10 @@ function RoomChat(props) {
   });
    return (
     <Switch>
-      <Match when={room().type == 1 && room().state < 5} >
+      <Match when={room().type == 1 && room().state < 9} >
         <Invitation on_track={it=>wsc.emit(it)}/>
       </Match>
-      <Match when={room().type == 0 || room().state >= 5} >
+      <Match when={room().type == 0 || room().state >= 9} >
         <Notifier incoming_msg={notify_msg} />
         { conn_state() && 
         <div class="conn_state">{conn_state}</div>
@@ -310,8 +375,12 @@ function RoomChat(props) {
           <Command on_ready={handle_input_msg} tip="Say something or start a command with / "  class="texting" txt_cmd={txt_cmd} />
         </Match>
         <Match when={msg_kind() == 'Img'} >
-          <i class="i-img m_kind" onclick={()=>$msg_kind('Voi')}></i>
+          <i class="i-img m_kind" onclick={()=>$msg_kind('File')}></i>
           <ImgSlt bind={[slt_imgs,$slt_imgs]} class="msg_bar"/>
+        </Match>
+        <Match when={msg_kind() == 'File'} >
+          <i class="i-upload m_kind" onclick={()=>$msg_kind('Voi')}></i>
+          <FileSlt bind={[slt_files,$slt_files]} class="msg_bar"/>
         </Match>
         <Match when={msg_kind() == 'Voi'} >
           <i class="i-voi m_kind" onclick={()=>$msg_kind('Txt')}></i>

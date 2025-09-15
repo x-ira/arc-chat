@@ -45,6 +45,7 @@
   - Censorship Resistance: Relay network adapts around blocked or compromised nodes
 
 - __Simple but elegant__
+  + Create end-to-end encrypted private chat with one click
   + Multiple Modes: Run as relay node or a indepedent chat server
   + No client installation, No login.
   + Minimize core functions, no unnecessary distractions.

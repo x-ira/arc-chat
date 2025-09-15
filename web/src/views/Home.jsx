@@ -1,8 +1,8 @@
 import { createSignal, For } from 'solid-js';
 import {Btn, Txt, Lnk} from '../comps/Form';
 import {Header, Footer} from '../comps/Base';
-import { get } from '../utils/app';
-import {RoomKind} from '../utils/main';
+import { b64_url, get, u8_b64, u8_b64_url } from '../utils/app';
+import {get_ecdh, nick_name, RoomKind} from '../utils/main';
 import Join from "../comps/Join";
 
 function RoomQuery(props) {
@@ -19,6 +19,26 @@ function RoomQuery(props) {
       $arr(await rsp.json());
     }
   };
+  const invite_priv_chat = async() => {
+    $msg();
+    let ecdh = await get_ecdh();
+    let pub_key = u8_b64_url(ecdh.pub_key);
+    let skid = b64_url(dsa.skid);
+    let url = `${location.href}priv_share?nick=${nick_name()}&skid=${skid}&pub_key=${pub_key}`;
+    if (navigator.share) { // 原生分享 API (移动端)
+      try{
+        await navigator.share({
+          title: 'Arc Private Chat Invitation',
+          text: 'From <Anonymouse Relay Chat>',
+          url,
+        });
+      }catch(e) { //fallback
+        copyToClipboard(url);
+      }
+    } else { //fallback
+      copyToClipboard(url);
+    }
+  }
   const share_room = async (id) => {
     $msg();
     let url = `${location.href}share?rm=${id}`;
@@ -72,7 +92,8 @@ function RoomQuery(props) {
       </>}
       {msg() && <div class="act_msg">{msg}</div> }
       <p>
-          <Lnk to="/room"  name="Create Room" class="navi"/> &nbsp;&nbsp;
+          <Lnk to="/room"  name="Create Room" class="navi"/> &nbsp;&nbsp;&nbsp;
+          <a href="#"  onclick={invite_priv_chat} class="navi">Priv-Chat Invitation</a> &nbsp;&nbsp;&nbsp;
           <Lnk to="/roam"  name="Roaming" class="navi"/> &nbsp;
       </p>
     </div>

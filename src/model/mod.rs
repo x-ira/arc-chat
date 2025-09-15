@@ -52,11 +52,45 @@ pub enum WsMsg {
     Media { kid: Kid, by_kid: Kid, id: String, cont_type: String, data: ByteBuf },
     Chat{ room: String, msg: Msg},
     Stat(String), //room-id
+    Engagement { kid: Kid, pub_key: Kid,  by_kid: Kid, by_nick: String, by_pub_key: Kid, sign: ByteBuf, ts: i64}, //priv-chat
     Invite{ kid: Kid, inv: Invitation}, //priv-chat
     Reply{ kid: Kid, inv: Invitation}, //priv-chat
-    InviteTracking { kid: Kid, by_kid: Kid, by_nick: String, state: u8, sign: ByteBuf, ts:i64 }, //priv-chat
+    InviteTracking { kid: Kid, by_kid: Kid, by_nick: String, state: u8, sign: ByteBuf, ts:i64, tracker: Option<Kid> }, //priv-chat
     Welcome { nick: String, kid: Kid },
     Rsp(String),
+}
+impl WsMsg {
+    fn is_inv(&self) -> Option<([u8;32], u8)>{
+        match self {
+            WsMsg::Invite { inv, .. } => {
+                Some((inv.by_kid, 0))
+            },
+            WsMsg::Reply { inv, .. } => {
+                Some((inv.by_kid, 1))
+            },
+            WsMsg::InviteTracking { by_kid, state, ..} => {
+                Some((*by_kid, *state))
+            },
+            WsMsg::Engagement { by_kid, ..} => {
+                Some((*by_kid, 5))
+            },
+            _ => { None}
+        }
+    }
+}
+impl PartialEq for WsMsg {
+    fn eq(&self, other: &Self) -> bool {
+        if let Some(inv) = self.is_inv() {
+            if let Some(inv_other) = other.is_inv() {
+                return inv == inv_other
+            }
+        }else{ //is none
+            if other.is_inv().is_none() {
+                return self == other
+            }
+        }
+        false
+    }
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Invitation{
@@ -84,6 +118,7 @@ pub enum MsgKind {
     Txt,
     Img,
     Voi,
+    File,
     Aud,
     Vid,
 }

@@ -267,12 +267,27 @@ export async function reg_sw(file_name) {
 }
 //url safe b64,  keep pad: '='
 export function b64_url(b64) {
+  if(!b64) return null;
   return b64
     .replace(/\+/g, '-') // Replace '+' with '-'
     .replace(/\//g, '_'); // Replace '/' with '_'
 }
+export function b64_std(b64_url) {
+  if(!b64_url) return null;
+  return b64_url
+    .replace(/\-/g, '+') 
+    .replace(/\_/g, '/'); 
+}
+export function u8_b64_url(u8) {
+  let b64 = btoa(String.fromCharCode.apply(null, u8));
+  return b64_url(b64);
+}
 export function u8_b64(u8) {
     return btoa(String.fromCharCode.apply(null, u8));
+}
+export function b64_url_u8(b64_url) {
+  let b64 = b64_std(b64_url);
+  return atob(b64).split('').map(function (c) { return c.charCodeAt(0); });
 }
 export function b64_u8(b64) {
     return atob(b64).split('').map(function (c) { return c.charCodeAt(0); });

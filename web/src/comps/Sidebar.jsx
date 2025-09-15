@@ -1,14 +1,23 @@
 import './Sidebar.css';
 import { createSignal, For, onMount, onCleanup, createEffect, createResource } from 'solid-js';
-import { PrivChat, Room } from '../utils/main';
-import { chg_room, priv_chats, joined_rooms, room, set_mobile, is_mobile, is_open, set_open, first_chat } from '../stores/chat';
+import { PrivChat, Room, url_params } from '../utils/main';
+import { chg_room, priv_chats, joined_rooms, room, set_mobile, is_mobile, is_open, set_open, first_chat, load_room } from '../stores/chat';
+import { b64_std } from '../utils/app';
 
 function Sidebar(props) {
   const [actived, $actived] = createSignal();
+  const params = url_params();
+  const id = b64_std(params.get('id'));
+  const type = params.get('type');
   let mediaQueryList;
+  let init_chat;
   const controller = new AbortController();
  
   onMount(() => {
+    if(id) {
+      init_chat = load_room(type, id);
+    }
+  
     mediaQueryList = window.matchMedia('(max-width: 768px)');
     set_mobile(mediaQueryList.matches); //init
 
@@ -21,7 +30,7 @@ function Sidebar(props) {
   });
   createEffect(()=>{
     if(!room().rmk) {
-      chg_room(first_chat()); //init 1st room
+      chg_room(init_chat ?? first_chat()); //init 1st room
     }
   });
   createEffect(()=>{ //set actived

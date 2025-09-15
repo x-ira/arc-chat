@@ -1,5 +1,5 @@
 import {b64_ab, ab_b64, capitalize, u8_b64, b64_u8} from './app';
-import {gen_key_b64, hash_b64, Ecdsa, Cipher as Chacha} from 'xira-crypto-wasm';
+import {gen_key_b64, hash_b64, Ecdsa, StaticEcdh, Cipher as Chacha} from 'xira-crypto-wasm';
 import { nanoid } from 'nanoid';
 import { createStore, get as find, set } from 'idb-keyval';
 import { unwrap } from 'solid-js/store';
@@ -7,7 +7,7 @@ import { unwrap } from 'solid-js/store';
 window.meta = createStore('meta_store', 'meta');
 find(0,meta); //init
 
-const nick_name = () => {
+export const nick_name = () => {
   let _nick = localStorage.getItem('nick');
   if(!_nick) {
     _nick = 'Avenger-' + Math.floor(Math.random() * 1000);
@@ -15,7 +15,7 @@ const nick_name = () => {
   }
   return _nick;
 }
-const ecdsa = async () => {
+export const ecdsa = async () => {
   let sk = await find('sk', meta);
   let ecdsa = sk? new Ecdsa(sk): new Ecdsa(); //init
   if(!sk) {
@@ -26,9 +26,55 @@ const ecdsa = async () => {
   return ecdsa;
 }
 window.dsa = await ecdsa();
+// non-find-mode: if not found create new one
+export const get_ecdh = async (k, find_mode = false) => {
+  let ecdhs = await find('ecdhs', meta);
+  let ecdh;
+  if(find_mode) {
+    if(ecdhs && k) {
+      ecdh = deserialize_ecdh(ecdhs, k);
+      await set('ecdhs', ecdhs, meta);
+      return ecdh;
+    }
+    return null;
+  }
+  if(!ecdhs) {
+    ecdhs = {};
+  }
+  if(!k) {
+     ecdh = new StaticEcdh();
+     k = u8_b64(ecdh.pub_key); 
+     ecdhs[k] = ecdh.to_bytes();
+  }else if(!ecdhs[k]) {  //pub_key may consumed
+     ecdh = new StaticEcdh(); 
+     ecdhs[k] = ecdh.to_bytes(); // serialized for persistence
+  }else{
+    ecdh = deserialize_ecdh(ecdhs, k);
+  }
+  await set('ecdhs', ecdhs, meta);
+  return ecdh;
+}
+function deserialize_ecdh(ecdhs, k) {
+  let ecdh = StaticEcdh.from_bytes(ecdhs[k]);
+  //should recycle after exchange for security
+  delete ecdhs[k]; //always moved
+  return ecdh;
+}
+export const expire_ecdh = async (k) => {
+  let ecdhs = await find('ecdhs', meta);
+  if(ecdhs && ecdhs[k]) delete ecdhs[k]; 
+  await set('ecdhs', ecdhs, meta);
+}
+export async function ecdh_exchange(kid, rival_pub_key, find_mode){
+  let k = adapt_b64(kid);
+  let ecdh = await get_ecdh(k, find_mode);
+  if(!ecdh) return null;
+  let rmk = ecdh.exchange(rival_pub_key);
+  return rmk;
+}
 /// type: 1,
-// state: 0: pending, 1: waitting, 2: declined, 3: expired, 4. cancelled, 5. accepted
-class PrivChat{
+// state: 0: pending, 1: waitting, 2: declined, 3: expired, 4. cancelled, 5. engaged  9. accepted
+export class PrivChat{
   static async save(priv_chats) {
     await set('priv_chats', unwrap(priv_chats), meta);
   }
@@ -41,7 +87,7 @@ class PrivChat{
     return list.find(chat => chat.kid == kid);
   }
 }
-class Room{
+export class Room{
   static async join(room) {
     let joined_rooms = await this.list();
     let idx = joined_rooms.findIndex(rm => rm.id == room.id);
@@ -63,15 +109,15 @@ class Room{
     return joined_rooms.find(rm => rm.id == room_id);
   }
 }
-const PUB_ROOM_STATE = [ 
+export const PUB_ROOM_STATE = [ 
   [0, 'Inactived'],
   [1, 'Actived'],
 ];
-const PUB_ROOM_KINDS = [ // vs: private chat
+export const PUB_ROOM_KINDS = [ // vs: private chat
   ['o', 'Open Group'],
   ['e', 'Secured Group'], //Guarded
 ];
-class RoomKind{
+export class RoomKind{
   static list() {
     return PUB_ROOM_KINDS;
   }
@@ -99,7 +145,7 @@ class RoomKind{
     }
   }
 }
-class Cipher{
+export class Cipher{
   constructor(key_b64) {
     this._key_32_u8 = b64_ab(key_b64);
     this.cipher = new Chacha(this._key_32_u8);
@@ -137,7 +183,7 @@ class Cipher{
   //enc local Blob to File
   async enc_blob(lb) { //loc_blob which have not .bytes()
     let enc_u8 = await this.enc_file_u8(lb);
-    let file_name = nanoid() //unique id 
+    let file_name = `${nanoid(7)}-${lb.name}`; //unique id 
     return new File([enc_u8], file_name, {type: lb.type}); 
   }
   dec_blob(data_u8, file_name, type) {
@@ -149,7 +195,7 @@ class Cipher{
     return gen_key_b64(pass,salt);
   }
 }
-class Locker{
+export class Locker{
   constructor(locked, pin_hash){
     this.locked = locked;
     this.pin_hash = pin_hash;
@@ -172,14 +218,14 @@ class Locker{
     set('locker', locker, meta);
   }
 }
-function break_time(curr_ts, curr_i, msgs){
+export function break_time(curr_ts, curr_i, msgs){
   if(curr_i + 1 < msgs.length){ //has next
     let next_ts = msgs[curr_i+1].ts;
     return (next_ts - curr_ts) > 1000 * 60 * 10  // 10 minutes
   }
   return true;
 }
-function adapt_b64(o) {
+export function adapt_b64(o) {
   if(!o) return o;
   if(o instanceof Uint8Array || o instanceof Array) {
     return u8_b64(o);
@@ -187,7 +233,7 @@ function adapt_b64(o) {
     return o;
   }
 }
-function adapt_u8(o) {
+export function adapt_u8(o) {
   if(!o) return o;
   if(typeof o == 'string') {
     return b64_u8(o);
@@ -196,19 +242,18 @@ function adapt_u8(o) {
   }
 }
 // return priv-chat room id with b64
-const msg_room = (kid, by_kid) => {
+export const msg_room = (kid, by_kid) => {
   kid = adapt_b64(kid);
   by_kid = adapt_b64(by_kid)
   return kid == dsa.skid ? by_kid : kid;
 }
-function utf8_u8(str) {
+export function utf8_u8(str) {
   if (typeof str !== 'string') throw new Error('string expected');
   return new Uint8Array(new TextEncoder().encode(str)); 
 }
-function u8_utf8(bytes){
+export function u8_utf8(bytes){
   return new TextDecoder().decode(bytes);
 }
-function url_params() {
+export function url_params() {
   return new URLSearchParams(window.location.search);
 }
-export { Cipher, ecdsa, nick_name, Locker, url_params, break_time, PUB_ROOM_STATE, RoomKind, Room, PrivChat, msg_room, adapt_b64, adapt_u8 }

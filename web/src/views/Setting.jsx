@@ -61,6 +61,12 @@ function Setting(){
             del('priv_chats', meta).then(r=>$msg('done'));
           }
         }} />
+        <Btn name="Expire Priv-Chat Invitations" bind={()=>{
+          if(confirm('All priv-chat invitations will be expired, Continue?')) {
+            clear();
+            del('ecdhs', meta).then(r=>$msg('done'));
+          }
+        }} />
       </div>
       <div>{msg}</div>
       </form>

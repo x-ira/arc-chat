@@ -1,18 +1,18 @@
 use std::{collections::{HashSet, VecDeque}, fs::{self, File}, io::Write, sync::Arc};
 use air::conf::cfg_or;
-use base64ct::{Base64, Encoding};
+use base::db::Store;
 use futures::SinkExt;
 use tokio::sync::{broadcast::{self, Sender}, mpsc::{self}};
 use futures::stream::{SplitSink, StreamExt};
 use axum::{extract::{ws::{Message, WebSocket}, DefaultBodyLimit, Multipart, Path, State, WebSocketUpgrade}, response::Response, routing::{any, get, post}, Json, Router};
 use tokio_util::sync::CancellationToken;
-use crate::{err::{AppErr, AppResult}, model::Kid, util::b64_url_u8_32};
+use crate::{err::{AppErr, AppResult}, model::Kid, util::{b64_url_u8_32, u8_b64}};
 use crate::model::{Msg, PubRoom, WsMsg};
 use super::AppCtx;
 
-const MAX_FILE_SIZE: usize = 20; // MB
 const ROOM_CH_SIZE: usize = 100;
 const USER_CH_SIZE: usize = 100;
+const INVITATION_TBL: &str = "Invitation";
 
 pub type RoomTxMap = dashmap::DashMap<String, broadcast::Sender<WsMsg>>;
 pub type UserTxs = dashmap::DashMap<Kid, mpsc::Sender<WsMsg>>;
@@ -25,6 +25,7 @@ pub fn router() -> Router<Arc<AppCtx>> {
 }
 async fn upload(mut multipart: Multipart) -> AppResult<Json<Vec<String>>>{ //only for pub-room
     let mut file_urls = Vec::new();
+    let max_file_size = cfg_or("room.max_upload_file_size", 20); //unit: MB
     while let Some(field) = multipart.next_field().await? {
         if let Some(f_name) = field.file_name(){
             // println!("{:?}", field.content_type());
@@ -38,8 +39,8 @@ async fn upload(mut multipart: Multipart) -> AppResult<Json<Vec<String>>>{ //onl
             }
             let file_name = f_name.to_string();
             let data = field.bytes().await?;
-            if data.len() > MAX_FILE_SIZE * 1024 * 1024 {
-               return Err(AppErr::UploadFail(format!("File is too large, size should less than {MAX_FILE_SIZE}M.")));
+            if data.len() > max_file_size * 1024 * 1024 {
+               return Err(AppErr::UploadFail(format!("File is too large, size should less than {max_file_size}MB.")));
             }
             // println!("Length of `{}` is {} bytes", file_name, data.len());
             let path = format!("res/{res_type}");
@@ -64,9 +65,20 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppCtx>, nick: String, kid_
     
     let kid_buf = b64_url_u8_32(&kid_safe)
         .unwrap_or_else(|_| panic!("Invalid KID: {kid_safe} for {nick}"));
-    let kid_local = Base64::encode_string(&kid_buf);
+    let kid_local = u8_b64(&kid_buf);
     
     state.user_txs.insert(kid_buf, i_tx.clone());
+
+    //send cached msgs
+    if let Ok(cached_inv_msgs) = state.store.find_in::<Vec<WsMsg>>(INVITATION_TBL, &kid_local){
+        for ws_msg in cached_inv_msgs {
+            send_to_client(&ws_msg, &mut sender).await;
+        }
+        if let Err(e) = state.store.remove_in(INVITATION_TBL, &kid_local) { //clear
+            log::error!("remove cached invitation msgs failed, err: {e:?}");
+        } 
+    }
+    
     let room_listener = |room_tx: Sender<WsMsg>| {
         let mut room_rx = room_tx.subscribe();
         let task_token = token.clone();
@@ -166,9 +178,12 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppCtx>, nick: String, kid_
                     let room_tx = get_room_tx(room);
                     if room_tx.send(ws_msg).is_err()  { break 'msg_handler }
                 },
-                WsMsg::Invite { ref kid, .. } | WsMsg::Reply { ref kid, .. } | WsMsg::InviteTracking { ref kid, .. }=> {
-                    if let Some(kid_tx) = state.user_txs.get(kid)
-                        && kid_tx.send(ws_msg.clone()).await.is_err(){ break }
+                WsMsg::Invite { ref kid, .. } | WsMsg::Reply { ref kid, .. } | WsMsg::InviteTracking { ref kid, .. } | WsMsg::Engagement { ref kid, .. }=> {
+                    if let Some(kid_tx) = state.user_txs.get(kid){ //online
+                         if kid_tx.send(ws_msg.clone()).await.is_err() { break}
+                    }else { //offline, should cached invitation msg for better user experience
+                        if cache_invite_msg(&state.store, &u8_b64(kid),  ws_msg).is_err() { break };
+                    }
                 },
                 WsMsg::Stat(room) => { // stat online users
                     let room_tx = get_room_tx(&room);
@@ -201,4 +216,20 @@ async fn send_to_client(msg: &WsMsg, sender: &mut SplitSink<WebSocket,Message>) 
         },
     }
     true
+}
+fn cache_invite_msg(store: &Store, kid_b64: &str, ws_msg: WsMsg) -> AppResult<()>{
+    match store.find_in::<Vec<WsMsg>>(INVITATION_TBL, kid_b64) {
+        Ok(mut ws_msgs) => {
+            if ws_msgs.contains(&ws_msg) { //should replace with new one
+                ws_msgs.iter_mut().find(|m| *m == &ws_msg).map(|_| ws_msg);
+            }else{
+                ws_msgs.push(ws_msg);
+                store.save_in(INVITATION_TBL, kid_b64, &ws_msgs)?;
+            }
+        }
+        Err(_) => {
+            store.save_in(INVITATION_TBL, kid_b64, &vec![ws_msg])?;
+        }
+    };
+    Ok(())
 }

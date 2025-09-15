@@ -5,8 +5,8 @@ import { Cipher, RoomKind, Room } from "../utils/main";
 
 function Join(props = {}) {
   let $msg = props.msg;
-  let [rm_id, $rm_id] = createSignal();
-  let [pin, $pin] = createSignal('');
+  const [rm_id, $rm_id] = createSignal();
+  const [pin, $pin] = createSignal('');
   const [rm] = createResource(rm_id, async (rm_id) => {
     let rsp = await get(`api/load_room/${rm_id}`, {});
     if(!rsp.ok) return $msg(await rsp.text());
@@ -38,7 +38,7 @@ function Join(props = {}) {
       delete room.salt;
       delete room.token;
       if(await Room.join(room)){
-        window.location = '/chat'; //need refresh page 
+        window.location = `/chat?id=${room.id}&type=0`; //need refresh page 
       }
     }
   };

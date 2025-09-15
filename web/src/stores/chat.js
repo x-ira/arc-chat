@@ -1,12 +1,9 @@
 import { createStore, produce, reconcile, unwrap } from 'solid-js/store';
 import { Cipher, Locker, PrivChat, Room } from '../utils/main';
-import { Ecdh } from 'xira-crypto-wasm';
-import { u8_b64 } from '../utils/app';
 
 const [chat_ctx, $chat_ctx] = createStore({
   curr_room: {},
   rmk_cache: {},
-  ecdhs: {},
   joind_rooms: await Room.list(),
   priv_chats: await PrivChat.list(),
 });
@@ -20,18 +17,6 @@ export const set_open = (val) => $sys_ctx('is_open', val);
 export const is_mobile = () => sys_ctx.is_mobile;
 export const set_mobile = (val) => $sys_ctx('is_mobile', val);
 
-export const ecdh = (kid) => {
-  let k = u8_b64(kid); //b64 is suit for object prop
-  if(!chat_ctx.ecdhs[k]) {  //pub_key may consumed
-    $chat_ctx('ecdhs', e=>({...e, [k]:new Ecdh()}));
-  }
-  return chat_ctx.ecdhs[k];
-}
-export function ecdh_exchange(kid, rival_pub_key){ //manually recycle after exchange
-  let rmk = unwrap(ecdh(kid)).exchange(rival_pub_key);
-  $chat_ctx('ecdhs', u8_b64(kid), undefined); //null
-  return rmk;
-}
 export const priv_chats = () => {
   return chat_ctx.priv_chats;
 }
@@ -49,14 +34,14 @@ export function save_priv_chat(chat) {
   PrivChat.save(chat_ctx.priv_chats);
 }
 export function update_priv_chat(kid, state) {
-  if(state == 2 || state == 4) { //decline
+  if(state == 2 || state == 3 || state == 4) { //decline
     $chat_ctx('priv_chats', chats=>chats.filter(c=>c.kid != kid)); //remove
   }else{ //agree or other
     $chat_ctx('priv_chats', c=>c.kid == kid, 'state', state);
   }
   let curr_room = chat_ctx.curr_room;
   if(curr_room.type == 1 && curr_room.kid == kid) { // when curr_room is priv_chat, should refresh room
-    if(state == 2 || state == 4) { // decline
+    if(state == 2 || state == 3 || state == 4) { // decline
       $chat_ctx('curr_room', first_chat()); 
     }else{ //agree
       $chat_ctx('curr_room', "state", state);  //trigger room() effect!
@@ -84,7 +69,7 @@ export const first_chat = () => {
   return joined_rooms()[0] ?? priv_chats()[0]
 }
 export function load_room(type, id_b64) { 
-  return type==0?joined_room(id_b64) : priv_chat(id_b64);
+  return type==1?priv_chat(id_b64) : joined_room(id_b64);
 }
 //type: 0 for pub-room, 1 for priv-chats
 export function chg_room(rm) { 
