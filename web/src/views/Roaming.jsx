@@ -35,6 +35,7 @@ function Roaming() {
       <Btn name="Search" bind={query} />  &nbsp; 
       </form>
 
+   { list() && 
     <table>
       <thead><tr>
         <th width="20%">Peer</th>
@@ -52,7 +53,7 @@ function Roaming() {
         </tr>
         }</For>
       </tbody>
-    </table>
+    </table>}
       <p>
         <Lnk to="/"  name="Back to Home"/> &nbsp;
       </p>

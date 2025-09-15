@@ -69,6 +69,7 @@ function RoomQuery(props) {
       <Txt bind={$kw} on_enter={query} tip="keyword" class="keyword"/>
       <Btn name="Search" bind={query} />  &nbsp;
     </form>
+   { arr() && 
     <table>
       <thead><tr>
         <th width="20%">Room</th>
@@ -87,6 +88,7 @@ function RoomQuery(props) {
         }</For>
       </tbody>
     </table>
+    }
       {sltRoom() && <>
         <Join rm_id={sltRoom()[3]} msg={$msg} />
       </>}
