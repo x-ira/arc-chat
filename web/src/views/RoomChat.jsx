@@ -1,16 +1,16 @@
-import { createEffect, createSignal, For, Match, onCleanup, onMount, Show, Switch} from 'solid-js';
+import { createEffect, createSignal, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js';
 import { createStore } from 'solid-js/store';
-import {Time,get,post,upload_files, b64_u8, b64_url, u8_b64, b64_url_u8, b64_std} from '../utils/app';
-import {Btn, Slt, ImgSlt, Lnk, FileSlt} from '../comps/Form';
-import { Cipher, PrivChat, break_time, ecdh_exchange, expire_ecdh, msg_room, nick_name, url_params } from '../utils/main';
+import { Time,get,upload_files, b64_u8, b64_url, u8_b64, b64_url_u8, b64_std } from '../utils/app';
+import { Btn, Slt, ImgSlt, Lnk, FileSlt } from '../comps/Form';
+import { Blocked, Cipher, PrivChat, break_time, ecdh_exchange, expire_ecdh, msg_room, nick_name, url_params } from '../utils/main';
 import Notifier from '../comps/Notifier';
 import Invitation from '../comps/Invitation';
 import Voice from '../comps/Voice';
 import MediaMsg from '../comps/MediaMsg';
 import Command from '../comps/Command';
 import { engagement_sign, engagement_verify, inv_sign, inv_track_sign, inv_track_verify, inv_verify, m_io, me } from '../comps/ChatHelper';
-import { room, rmk, save_priv_chat, update_priv_chat, priv_chat, room_id } from '../stores/chat';
-import { set, get as find, clear, setMany } from 'idb-keyval';
+import { room, rmk, save_priv_chat, update_priv_chat, priv_chat, room_id, quit_joined_room } from '../stores/chat';
+import { set, get as find, setMany, del, keys, delMany } from 'idb-keyval';
 import { nanoid } from 'nanoid';
 import WebSocketClient from '../utils/ws';
 import _ from '../utils/notification';
@@ -27,6 +27,7 @@ function RoomChat(props) {
   let [inv_msg, $inv_msg] = createSignal(); 
   let [conn_state, $conn_state] = createSignal(); 
   let [msgs, $msgs] = createStore([]);
+  let [cmd_output, $cmd_output] = createSignal();
   let blob_urls = [];
   let kid = dsa.kid;
   let skid = dsa.skid;
@@ -76,6 +77,11 @@ function RoomChat(props) {
         let priv_dist = type == 1 ? u8_b64(ws_msg.PrivChat.kid): undefined;
         let msg = type == 0 ? ws_msg.Chat.msg : ws_msg.PrivChat.msg;
         let src = type == 0 ? ws_msg.Chat.room : priv_src; //for convenience
+
+        if(await Blocked.is_blocked(msg.kid)) { //ignore it
+          console.log('blocked msg:', ws_msg);
+          return;
+        }
         if (document.visibilityState === 'hidden' && type == 1) {
            notify.show('Arc-Chat',`A private ${msg.kind} msg from ${msg.nick}`);
         }
@@ -161,6 +167,11 @@ function RoomChat(props) {
          notify.show('Arc-Chat', cont);
         }
         update_priv_chat(u8_b64(it.by_kid), it.state);
+      }else if(ws_msg.Ban) {
+        let msg = ws_msg.Ban;
+        $cmd_output(`You are banned and will be unbanned after ${Math.ceil(msg.remaining_time/3600000.)} hours.`);
+      }else if(ws_msg.Rsp) {
+        $cmd_output(ws_msg.Rsp);
       }
     });
   }
@@ -184,12 +195,12 @@ function RoomChat(props) {
       if(!rsp.ok) { return console.error('load history msgs failed: err: ', await rsp.text()) }
       let [rest_cnt, bat] = await rsp.json();
       $rest_len(rest_cnt);
+      bat = await Blocked.filter(bat); 
       $msgs([...bat, ...msgs]);
     });
   }
   const listen_room = ()=> {
-    if(room() && wsc)
-      wsc.emit({Listen: {room:room().id, kind: room().kind}});
+    if(room() && wsc) wsc.emit({Listen: {room:room().id, kind: room().kind}});
   }
   const refresh_room = () => {
     listen_room(); //switch room need a new listener
@@ -205,6 +216,14 @@ function RoomChat(props) {
     $txt_cmd({cmd, params});
     if(send_at_once) { send_msg(); }
   }
+  const clear_priv_history = async ()=> {
+    keys().then(async keys => {
+      let media_conts = keys.filter(([msg_room, _])=> msg_room == room_id());
+      await delMany(media_conts);
+    })
+    await del(room_id());
+  }
+  const cmd_filter = (cmd_suggs) => cmd_suggs.filter(c=> c.scope == 2 || c.scope == room().type);
   const cmd_msg = async () => {
     if(!txt_cmd()) return [];
     let {cmd, params} = txt_cmd();
@@ -224,19 +243,46 @@ function RoomChat(props) {
         let inv = await inv_sign(b64_u8(params.kid), nick, params.greeting); //always allow invite
         new_msg = {Invite: inv};
         break;
-      case 'leave':
+      case 'quit':
+        quit_joined_room(room().id);
+        break;
+      case 'clear': 
+        await clear_priv_history();
+        $msgs([]); //update view
+        break;
+      case 'leave':  
+        await clear_priv_history();
         update_priv_chat(room_id(),4);
         break;
-      case 'report':
-        new_msg = {Report: params};
-        break;
       case 'block':
-        new_msg = {Block: params};
+        if(!await Blocked.is_blocked(params.kid)){ //avoid repeated blocking
+          Blocked.add(params);
+          new_msg = {Block: {kid: b64_u8(params.kid), act: 0}};
+        }
         break;
-      case 'stat': //TODO
+      case 'unblock':
+        if(await Blocked.is_blocked(params.kid)){ //avoid repeated unblocking
+          Blocked.remove(params.kid);
+          new_msg = {Block: {kid: b64_u8(params.kid), act: 1}};
+        }
+        break;
+      case 'stat':
+        new_msg = {Stat: room().id};
         break;
       case 'help':
       default :
+        $cmd_output(`
+          Command Usages:<br>
+            &nbsp;/invite  + [nick] : invite someone to join a private chat.<br>
+            &nbsp;/wisper + [nick] + [msg] : send a wisper message. <br>
+            &nbsp;/block + [nick] : put someone in your blacklist. <br>
+            &nbsp;/unblock + [nick] : remove someone from your blacklist. <br>
+            &nbsp;/quit : quit current room. <br>
+            &nbsp;/leave : leave the Priv-Chat & clear the chat history. <br>
+            &nbsp;/clear : clear the Priv-Chat history. <br>
+            &nbsp;/stat : statistic info about current room. <br>
+            &nbsp;/help : print this message.<br>
+        `);
     };
     $txt_cmd(null); //clear
     return [new_msg];
@@ -368,11 +414,12 @@ function RoomChat(props) {
             </div>
           </>
        }</For>
+      {cmd_output() && <div class="act_msg cmd_output"><span class="x_close" onclick={()=>$cmd_output()}>&#x2715;</span><div innerHTML={cmd_output()}/></div>}
       </div>
       <Switch>
          <Match when={msg_kind() == 'Txt'} >
           <i class="i-chat m_kind" on:click={()=>$msg_kind('Img')}></i> 
-          <Command on_ready={handle_input_msg} tip="Say something or start a command with / "  class="texting" txt_cmd={txt_cmd} />
+          <Command on_ready={handle_input_msg} tip="Say something or start a command with / "  class="texting" txt_cmd={txt_cmd}  filter={cmd_filter}/>
         </Match>
         <Match when={msg_kind() == 'Img'} >
           <i class="i-img m_kind" onclick={()=>$msg_kind('File')}></i>

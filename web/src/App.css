@@ -173,7 +173,6 @@ footer{
   color: #42a5f5;
   text-decoration: none;
 }
-
 .time_date {
   color: #747474;
   display: block;
@@ -226,6 +225,20 @@ hr {
 .inv_decline{
   color: #b221d1;
   background: #ccc;
+}
+
+.cmd_output{
+  position: sticky;
+  bottom: 0;
+  margin: 5px 0px;
+}
+.x_close {
+  background: none;
+  float: right;
+  border: none;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 @media (prefers-color-scheme: dark) {
   .info a {

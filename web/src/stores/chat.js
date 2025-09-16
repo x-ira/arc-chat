@@ -59,6 +59,10 @@ export function room_id(rm) {
 export const joined_rooms = () => {
   return chat_ctx.joind_rooms;
 }
+export const quit_joined_room = async (rm_id) => {
+  let updated_rooms = await Room.quit(rm_id);
+  return $chat_ctx('joind_rooms', updated_rooms);
+}
 export const joined_room = (id) => {
   return chat_ctx.joind_rooms.find(rm => rm.id == id);
 }

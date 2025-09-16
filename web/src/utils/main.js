@@ -99,6 +99,12 @@ export class Room{
     await set("joined_rooms", joined_rooms, meta);
     return true;
   }
+  static async quit(room_id) {
+    let joined_rooms = await this.list();
+    let updated_rooms = joined_rooms.filter(rm => rm.id != room_id);
+    await set("joined_rooms", updated_rooms, meta);
+    return updated_rooms;
+  }
   static async list(){ //reverse for latest joined
     let rooms = await find("joined_rooms", meta);
     return rooms ? rooms.reverse() : [];
@@ -195,6 +201,34 @@ export class Cipher{
     return gen_key_b64(pass,salt);
   }
 }
+
+export class Blocked{
+  static async add(target) {
+    let blocked = await Blocked.list();
+    if(!blocked)  blocked = [];
+    blocked.push(target);
+    await set('blocked', blocked, meta);
+  }
+  static async remove(kid) {
+    let blocked = await Blocked.list();
+    blocked = blocked.filter(b=> b.kid != kid);
+    await set('blocked', blocked, meta);
+  }
+  static async list() {
+    let blocked = await find('blocked', meta);
+    return blocked ?? [];
+  }
+  static async is_blocked(kid) {
+    let kid_b64 = adapt_b64(kid);
+    let blocked = await Blocked.list();
+    return (blocked && blocked.some(b => b.kid == kid_b64)); 
+  }
+  static async filter(msgs) {
+    let blocked = await Blocked.list();
+    return msgs.filter(m => !blocked.some(b=>b.kid == u8_b64(m.kid)))
+  }
+}
+
 export class Locker{
   constructor(locked, pin_hash){
     this.locked = locked;

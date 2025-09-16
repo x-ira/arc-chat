@@ -9,9 +9,9 @@ function Sidebar(props) {
   const params = url_params();
   const id = b64_std(params.get('id'));
   const type = params.get('type');
+  const controller = new AbortController();
   let mediaQueryList;
   let init_chat;
-  const controller = new AbortController();
  
   onMount(() => {
     if(id) {

@@ -48,16 +48,18 @@ impl PartialEq for PubRoom {
 pub enum WsMsg {
     Bye,
     Listen{ room: String, kind: PubRoomKind }, //for group
+    Chat{ room: String, msg: Msg},
     PrivChat{ kid: Kid, state: u8,  msg: Msg}, //state-> 0: normal, 1: offline, 2: rejected
     Media { kid: Kid, by_kid: Kid, id: String, cont_type: String, data: ByteBuf },
-    Chat{ room: String, msg: Msg},
     Stat(String), //room-id
     Engagement { kid: Kid, pub_key: Kid,  by_kid: Kid, by_nick: String, by_pub_key: Kid, sign: ByteBuf, ts: i64}, //priv-chat
     Invite{ kid: Kid, inv: Invitation}, //priv-chat
     Reply{ kid: Kid, inv: Invitation}, //priv-chat
     InviteTracking { kid: Kid, by_kid: Kid, by_nick: String, state: u8, sign: ByteBuf, ts:i64, tracker: Option<Kid> }, //priv-chat
-    Welcome { nick: String, kid: Kid },
-    Rsp(String),
+    Block { kid: Kid, act: u8 },
+    Ban { kid: Kid, remaining_time: i64, blocked_cnt: usize }, 
+    // Welcome { nick: String, kid: Kid },
+    Rsp(String), // rsp of a svc-call
 }
 impl WsMsg {
     fn is_inv(&self) -> Option<([u8;32], u8)>{

@@ -11,8 +11,8 @@ class WebSocketClient {
     	def_evt_name: opt.def_evt_name ?? 'msg',
     	binary: opt.binary ?? true,  // Msgpack | JSON
     	binaryType: opt.binaryType || "arraybuffer",  // "blob" | "arraybuffer"
-      maxRetries: opt.maxRetries || 10,       // 最大重连次数
-      reconnectInterval: opt.reconnectInterval || 1000, // 基础重连间隔(ms)
+      maxRetries: opt.maxRetries || 5,       // 最大重连次数
+      reconnectInterval: opt.reconnectInterval || 5*1000, // 基础重连间隔(ms)
       reconnectExponent: opt.reconnectExponent || 1.7, // 退避指数
       isActiveClose: false                         // 是否主动关闭标记<cite data-id='70002'>70002</cite>
     };

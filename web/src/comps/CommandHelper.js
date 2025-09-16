@@ -2,6 +2,7 @@ export const defaultCommands = [
   {
     name: 'invite',
     desc: 'Invite to private chat',
+    scope: 0, // 0: room, 1: priv-chat, 2, all
     parameters: [
       {
         name: 'nick',
@@ -20,6 +21,7 @@ export const defaultCommands = [
   {
     name: 'wisper',
     desc: 'wisper to ...',
+    score: 0,
     parameters: [
       {
         name: 'nick',
@@ -36,26 +38,9 @@ export const defaultCommands = [
     ]
   },
   {
-    name: 'report',
-    desc: 'Report User',
-    parameters: [
-      {
-        name: 'nick',
-        type: 'user',
-        required: true,
-        desc: 'To be reported'
-      },
-      {
-        name: 'reason',
-        type: 'string',
-        required: false,
-        desc: 'Reason: [Spam, Violations]'
-      }
-    ]
-  },
-  {
     name: 'block',
-    desc: 'Dont see this users msg',
+    desc: 'Put someone in your blacklist',
+    scope: 0,
     parameters: [
       {
         name: 'nick',
@@ -63,46 +48,70 @@ export const defaultCommands = [
         required: true,
         desc: ''
       },
-      {
-        name: 'duration',
-        type: 'number',
-        required: false,
-        desc: 'block period, in minutes'
-      }
     ]
   },
   {
-    name: 'help',
-    desc: `
-  Usages:
-    /stat : Statistic info about current room. 
-    /invite  + [nick] : Invite someone to join a private chat.
-    /help : print this message.
-    `,
-    parameters: []
+    name: 'unblock',
+    desc: 'Remove someone from your blacklist',
+    scope: 0,
+    parameters: [
+      {
+        name: 'nick',
+        type: 'user',
+        required: true,
+        desc: ''
+      },
+    ]
   },
   {
     name: 'clear',
-    desc: 'Clear chat history',
+    desc: 'Clear Priv-Chat history',
+    scope: 1,
     parameters: []
   },
   {
     name: 'leave',
     desc: 'Leave the current private chat',
+    scope: 1,
     parameters: []
   },
   {
     name: 'quit',
     desc: 'Quit the joined room',
-    parameters: [
-      {
-        name: 'room',
-        type: 'room',
-        required: true,
-        desc: 'Target Room'
-      }
-    ]
-  }
+    scope: 0,
+    parameters: []
+  },
+  {
+    name: 'stat',
+    desc: 'Statistic info of current room',
+    scope: 0,
+    parameters: []
+  },
+  {
+    name: 'help',
+    desc: 'Command usages',
+    scope: 2,
+    parameters: []
+  },
+  // {
+  //   name: 'report',
+  //   desc: 'Report User',
+  //   scope: 0,
+  //   parameters: [
+  //     {
+  //       name: 'nick',
+  //       type: 'user',
+  //       required: true,
+  //       desc: 'To be reported'
+  //     },
+  //     {
+  //       name: 'reason',
+  //       type: 'string',
+  //       required: false,
+  //       desc: 'Reason: [Spam, Violations]'
+  //     }
+  //   ]
+  // },
 ];
 
   // Create command suggestion item

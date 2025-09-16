@@ -14,7 +14,8 @@ function Command(props = {}) {
   const [rm_onlines, $rm_onlines] = createSignal([]);
   let input_ref;
   
-  const commands = () => props.commands || defaultCommands;
+  const commands = () => props.filter ? props.filter(defaultCommands) : defaultCommands;
+
   const room_onlines = async ()=> {
     let rsp = await get(`api/room_onlines`, {room: room().id}); //.then(async rsp => { 
     if(!rsp.ok) {return console.error(await rsp.text())}
@@ -64,10 +65,20 @@ function Command(props = {}) {
       $curr_cmd(null);
       return;
     }
-    // Find matching commands
-    const matching_cmds = commands().filter(cmd => 
-      cmd.name.toLowerCase().includes(parsed.cmdName.toLowerCase())
+    // Find matching commands - prioritize exact matches
+    const exactMatch = commands().find(cmd => 
+      cmd.name.toLowerCase() === parsed.cmdName.toLowerCase()
     );
+    
+    let matching_cmds;
+    if (exactMatch) {
+      matching_cmds = [exactMatch];
+    } else {
+      // Only use fuzzy matching if no exact match found
+      matching_cmds = commands().filter(cmd => 
+        cmd.name.toLowerCase().startsWith(parsed.cmdName.toLowerCase())
+      );
+    }
     if (matching_cmds.length === 1 && matching_cmds[0].name === parsed.cmdName) { // Exact command match, show parameter suggestions
       const cmd = matching_cmds[0];
       $curr_cmd(cmd);
