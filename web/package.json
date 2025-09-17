@@ -22,6 +22,6 @@
     "idb-keyval": "^6.2.2",
     "nanoid": "^5.1.5",
     "solid-js": "1.9",
-    "xira-crypto-wasm": "^1.0.7"
+    "xira-crypto-wasm": "^1.0.8"
   }
 }
