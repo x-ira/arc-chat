@@ -334,7 +334,7 @@ function RoomChat(props) {
       let msg = chat_msg('File', cont);
       new_msgs.push(msg);
     }
-    slt_files([]); //reset
+    $slt_files([]); //reset
     return new_msgs;
   }
   const voi_msg = async () =>{
