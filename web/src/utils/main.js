@@ -86,6 +86,17 @@ export class PrivChat{
     let list = await this.list();
     return list.find(chat => chat.kid == kid);
   }
+  static async remark(kid, alias) {
+    let priv_chats = await this.list();
+    let updated_priv_chats = priv_chats.map(chat => {
+      if(chat.kid == kid) {
+        chat.nick = alias;
+      }
+      return chat;
+    });
+    await set("priv_chats", updated_priv_chats, meta);
+    return updated_priv_chats;
+  }
 }
 export class Room{
   static async join(room) {
@@ -102,6 +113,17 @@ export class Room{
   static async quit(room_id) {
     let joined_rooms = await this.list();
     let updated_rooms = joined_rooms.filter(rm => rm.id != room_id);
+    await set("joined_rooms", updated_rooms, meta);
+    return updated_rooms;
+  }
+  static async remark(rm_id, name) {
+    let joined_rooms = await this.list();
+    let updated_rooms = joined_rooms.map(rm => {
+      if(rm.id == rm_id) {
+        rm.name = name;
+      }
+      return rm;
+    });
     await set("joined_rooms", updated_rooms, meta);
     return updated_rooms;
   }

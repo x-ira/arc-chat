@@ -9,7 +9,7 @@ import Voice from '../comps/Voice';
 import MediaMsg from '../comps/MediaMsg';
 import Command from '../comps/Command';
 import { engagement_sign, engagement_verify, inv_sign, inv_track_sign, inv_track_verify, inv_verify, m_io, me } from '../comps/ChatHelper';
-import { room, rmk, save_priv_chat, update_priv_chat, priv_chat, room_id, quit_joined_room } from '../stores/chat';
+import { room, rmk, save_priv_chat, update_priv_chat, priv_chat, room_id, quit_joined_room, remark_joined_room, remark_priv_chat } from '../stores/chat';
 import { set, get as find, setMany, del, keys, delMany } from 'idb-keyval';
 import { nanoid } from 'nanoid';
 import WebSocketClient from '../utils/ws';
@@ -243,6 +243,9 @@ function RoomChat(props) {
         let inv = await inv_sign(b64_u8(params.kid), nick, params.greeting); //always allow invite
         new_msg = {Invite: inv};
         break;
+      case 'remark':
+        room().type == 0 ? remark_joined_room(room().id, params.alias) : remark_priv_chat(room().kid, params.alias);
+        break;
       case 'quit':
         quit_joined_room(room().id);
         break;
@@ -275,6 +278,7 @@ function RoomChat(props) {
           Command Usages:<br>
             &nbsp;/invite  + [nick] : invite someone to join a private chat.<br>
             &nbsp;/wisper + [nick] + [msg] : send a wisper message. <br>
+            &nbsp;/remark + [msg] : set a alias for this chat. <br>
             &nbsp;/block + [nick] : put someone in your blacklist. <br>
             &nbsp;/unblock + [nick] : remove someone from your blacklist. <br>
             &nbsp;/quit : quit current room. <br>

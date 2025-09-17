@@ -21,7 +21,7 @@ export const defaultCommands = [
   {
     name: 'wisper',
     desc: 'wisper to ...',
-    score: 0,
+    scope: 0,
     parameters: [
       {
         name: 'nick',
@@ -34,6 +34,19 @@ export const defaultCommands = [
         type: 'string',
         required: true,
         desc: 'Wisper message to sent'
+      }
+    ]
+  },
+  {
+    name: 'remark',
+    desc: 'set a alias for this chat',
+    scope: 2,
+    parameters: [
+      {
+        name: 'alias',
+        type: 'string',
+        required: true,
+        desc: 'Alias'
       }
     ]
   },

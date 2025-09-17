@@ -49,6 +49,10 @@ export function update_priv_chat(kid, state) {
   }
   PrivChat.save(chat_ctx.priv_chats);
 }
+export const remark_priv_chat = async (kid, alias) => {
+  let updated_priv_chats = await PrivChat.remark(kid, alias);
+  return $chat_ctx('priv_chats', updated_priv_chats);
+}
 export const room = () => {
   return chat_ctx.curr_room;
 }
@@ -61,6 +65,10 @@ export const joined_rooms = () => {
 }
 export const quit_joined_room = async (rm_id) => {
   let updated_rooms = await Room.quit(rm_id);
+  return $chat_ctx('joind_rooms', updated_rooms);
+}
+export const remark_joined_room = async (rm_id, alias) => {
+  let updated_rooms = await Room.remark(rm_id, alias);
   return $chat_ctx('joind_rooms', updated_rooms);
 }
 export const joined_room = (id) => {
