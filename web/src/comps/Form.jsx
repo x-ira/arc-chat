@@ -48,7 +48,7 @@ function File(props) {
     if(!v() || v().length == 0) {
       $tip(init_tip);
     }else{
-      $tip(`${v().length} file(s) selected`);
+      $tip(`${v().length} ${accept.startsWith('image')?'image':'file'}(s) selected`);
     }
   });
   return (
