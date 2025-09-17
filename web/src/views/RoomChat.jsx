@@ -206,6 +206,7 @@ function RoomChat(props) {
     listen_room(); //switch room need a new listener
     $msgs([]); //clear store before load latest msgs
     $rest_len();
+    $cmd_output();
     blob_urls.forEach(src=>URL.revokeObjectURL(src)); blob_urls = []; //release blob obj
   }
   const chat_msg = (kind, cont, wisper) => { // parepared, No cont
