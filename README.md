@@ -232,7 +232,7 @@ Report it on [GitHub Issues](https://github.com/x-ira/arc-chat/issues) - we fix 
 
 ## Legal & Licensing
 
-**License**: [MIT License](LICENSE) - Use freely, modify, distribute!
+**License**: [Apache License v2.0](https://www.apache.org/licenses/LICENSE-2.0) - Use freely, modify, distribute!
 
 ### ⚠️ **Responsible Use**
 - ✅ Use Arc for legal communications only, Not intended for illegal activities.

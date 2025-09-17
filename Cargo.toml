@@ -3,6 +3,8 @@ name = "arc"
 version = "0.1.4"
 edition = "2024"
 default-run = "arc"
+license = "Apache-2.0"
+keywords = ["chat", "e2ee", "anonymous", "relay", "self-hosting"]
 
 #[features]
 

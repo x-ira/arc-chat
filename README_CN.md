@@ -39,7 +39,7 @@
   
   
 ## 开源协议
-本项目采用 [MIT License](LICENSE) 开源协议，允许自由使用、修改和分发。
+本项目采用 [Apache License v2.0](https://www.apache.org/licenses/LICENSE-2.0) 开源协议，允许自由使用、修改和分发。
 
 ## ⚠️ 免责声明
 
