@@ -68,7 +68,7 @@ function Setting(){
           }
         }} />
       </div>
-      <div>{msg}</div>
+      {msg() && <div class="act_msg">{msg}</div>}
       </form>
     </div>
   )  

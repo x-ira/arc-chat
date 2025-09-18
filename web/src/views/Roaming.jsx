@@ -1,6 +1,6 @@
-import {Btn, Txt, Lnk} from '../comps/Form';
-import { createSignal, createEffect } from 'solid-js';
-import {Header, Footer} from '../comps/Base';
+import { createSignal } from 'solid-js';
+import { Btn, Txt, Lnk } from '../comps/Form';
+import { Header, Footer } from '../comps/Base';
 import { get } from '../utils/app';
 
 function Roaming() {
@@ -54,6 +54,7 @@ function Roaming() {
         }</For>
       </tbody>
     </table>}
+      {msg() && <div class="act_msg">{msg}</div>}
       <p>
         <Lnk to="/"  name="Back to Home"/> &nbsp;
       </p>

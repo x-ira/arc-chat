@@ -202,12 +202,16 @@ function RoomChat(props) {
   const listen_room = ()=> {
     if(room() && wsc) wsc.emit({Listen: {room:room().id, kind: room().kind}});
   }
-  const refresh_room = () => {
-    listen_room(); //switch room need a new listener
+  const clean_room = ()=> {
     $msgs([]); //clear store before load latest msgs
-    $rest_len();
+    $rest_len(); 
     $cmd_output();
     blob_urls.forEach(src=>URL.revokeObjectURL(src)); blob_urls = []; //release blob obj
+  }
+  const refresh_room = () => {
+    clean_room();
+    listen_room(); //switch room need a new listener
+    history_msgs();
   }
   const chat_msg = (kind, cont, wisper) => { // parepared, No cont
     let msg = {nick, kind, ts: Time.ts(), kid, cont: rmk().enc_u8(cont), wisper };
@@ -248,15 +252,17 @@ function RoomChat(props) {
         room().type == 0 ? remark_joined_room(room().id, params.alias) : remark_priv_chat(room().kid, params.alias);
         break;
       case 'quit':
-        quit_joined_room(room().id);
+        await quit_joined_room(room().id);
+        clean_room();
         break;
       case 'clear': 
         await clear_priv_history();
-        $msgs([]); //update view
+        clean_room();
         break;
       case 'leave':  
         await clear_priv_history();
         update_priv_chat(room_id(),4);
+        clean_room();
         break;
       case 'block':
         if(!await Blocked.is_blocked(params.kid)){ //avoid repeated blocking
@@ -370,16 +376,17 @@ function RoomChat(props) {
   onCleanup(() =>{
     wsc.close();
   });
-  createEffect(() =>{
-    if(room().rmk) { //rmk change means room changed!!
+  // createEffect(() =>{
+  //   if(room().rmk) { //rmk change means room changed!!
+  //     refresh_room();
+  //   }
+  // });
+  createEffect((rmk) =>{
+    if(room().rmk != rmk) { //rmk change means room changed!!
       refresh_room();
     }
-  });
-  createEffect(() =>{
-    if(rest_len() === undefined) {
-      history_msgs();
-    }
-  });
+    return room().rmk;
+  }, room().rmk);
   createEffect(() =>{
     if(msgs && msgs.length > 5) {
       msg_block.scrollTop = msg_block.scrollHeight;

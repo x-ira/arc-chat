@@ -76,7 +76,8 @@ function RoomMgr() {
       <label>Description:</label>
       <textarea rows="5" cols="29" value={desc()} placeholder="description about this chat room, optional" onblur={e=>$desc(e.target.value)}/>
       <br/>
-      <Btn name="Save" bind={save_room} />  &nbsp; {msg}
+      <Btn name="Save" bind={save_room} />  &nbsp; 
+      {msg() && <div class="act_msg">{msg}</div>}
       </form>
       <Lnk to="/"  name="Back to Home"/> &nbsp;
     </div>
