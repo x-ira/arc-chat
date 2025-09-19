@@ -6,13 +6,15 @@ use tokio::sync::{broadcast::{self, Sender}, mpsc::{self}};
 use futures::stream::{SplitSink, StreamExt};
 use axum::{extract::{ws::{Message, WebSocket}, DefaultBodyLimit, Multipart, Path, State, WebSocketUpgrade}, response::Response, routing::{any, get, post}, Json, Router};
 use tokio_util::sync::CancellationToken;
-use crate::{err::{AppErr, AppResult}, model::Kid, util::{b64_url_u8_32, u8_b64}};
+use crate::{err::{AppErr, AppResult}, model::{Kid, SvcRsp}, util::{b64_url_u8_32, u8_b64}};
 use crate::model::{Msg, PubRoom, WsMsg};
 use super::AppCtx;
 
 const ROOM_CH_SIZE: usize = 100;
 const USER_CH_SIZE: usize = 100;
 pub const INVITATION_TBL: &str = "Invitation";
+pub const TEMP_PRIV_TBL: &str = "Temp-Priv-Chat";
+pub const TEMP_MEDIA_TBL: &str = "Temp-Media";
 pub const BLOCKED_TBL: &str = "Blocked";
 
 pub type RoomTxMap = dashmap::DashMap<String, broadcast::Sender<WsMsg>>;
@@ -89,13 +91,18 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppCtx>, nick: String, kid_
     state.user_txs.insert(kid_buf, i_tx.clone());
 
     //send cached msgs
-    if let Ok(cached_inv_msgs) = state.store.find_in::<Vec<WsMsg>>(INVITATION_TBL, &kid_local){
-        for ws_msg in cached_inv_msgs {
-            send_to_client(&ws_msg, &mut sender).await;
+    let mut send_cached_msgs = async |tbl: &str| {
+        if let Ok(cached_inv_msgs) = state.store.find_in::<Vec<WsMsg>>(tbl, &kid_local){
+            for ws_msg in cached_inv_msgs {
+                send_to_client(&ws_msg, &mut sender).await;
+            }
+            if let Err(e) = state.store.remove_in(tbl, &kid_local) { //clear
+                log::error!("remove cached msgs failed, err: {e:?}");
+            } 
         }
-        if let Err(e) = state.store.remove_in(INVITATION_TBL, &kid_local) { //clear
-            log::error!("remove cached invitation msgs failed, err: {e:?}");
-        } 
+    };
+    for tbl in [INVITATION_TBL, TEMP_PRIV_TBL, TEMP_MEDIA_TBL] {
+        send_cached_msgs(tbl).await;
     }
     
     let room_listener = |room_tx: Sender<WsMsg>| {
@@ -176,18 +183,20 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppCtx>, nick: String, kid_
                                 room_set.insert(room.into());
                             }
                         },
-                        WsMsg::Media { ref kid,  .. } => { //only for priv-chat
+                        WsMsg::Media { ref kid,  .. } => { //only for priv-chat currently
                             // println!("Media Msg:{kid}");
-                            if let Some(kid_tx) = state.user_txs.get(kid)
-                                && kid_tx.send(ws_msg.clone()).await.is_err() { break }
+                            if let Some(kid_tx) = state.user_txs.get(kid){
+                                if kid_tx.send(ws_msg.clone()).await.is_err() { break }
+                            }else if cache_msg(&state.store, TEMP_MEDIA_TBL, &u8_b64(kid),  ws_msg).is_err() { break }
                         }
-                        WsMsg::PrivChat { ref kid,  ref msg, ..  } => {
-                            if let Some(kid_tx) = state.user_txs.get(kid)
-                                && kid_tx.send(ws_msg.clone()).await.is_ok() { //sent ok
-                                if i_tx.send(ws_msg).await.is_err() { break } //send to me
-                             }else if i_tx.send(
-                                 WsMsg::PrivChat { kid: *kid, state: 1, msg: msg.clone() } //modified if partner is offline
-                             ).await.is_err() { break } //fail sent, update state
+                        WsMsg::PrivChat { ref kid,  ..  } => {
+                            if i_tx.send(ws_msg.clone()).await.is_err() { break } //send to me
+                            if let Some(kid_tx) = state.user_txs.get(kid) {
+                                if kid_tx.send(ws_msg).await.is_err() {  break }  //sent ok
+                            }else {
+                                if cache_msg(&state.store, TEMP_PRIV_TBL, &u8_b64(kid), ws_msg).is_err() {break}
+                                if i_tx.send(WsMsg::Rsp(SvcRsp::Offline)).await.is_err() { break }
+                            }
                         },
                         WsMsg::Chat { ref room, ref msg } => { // room chato
                             if let Some(mut msgs) = state.caches.get_mut(room) {
@@ -206,9 +215,9 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppCtx>, nick: String, kid_
                         },
                         WsMsg::Invite { ref kid, .. } | WsMsg::Reply { ref kid, .. } | WsMsg::InviteTracking { ref kid, .. } | WsMsg::Engagement { ref kid, .. } => {
                             if let Some(kid_tx) = state.user_txs.get(kid){ //online
-                                 if kid_tx.send(ws_msg.clone()).await.is_err() { break}
+                                 if kid_tx.send(ws_msg.clone()).await.is_err() { break }
                             }else { //offline, should cached invitation msg for better user experience
-                                if cache_invite_msg(&state.store, &u8_b64(kid),  ws_msg).is_err() { break };
+                                if cache_msg(&state.store, INVITATION_TBL, &u8_b64(kid), ws_msg).is_err() { break }
                             }
                         },
                         WsMsg::Block { kid, act } => {
@@ -233,7 +242,7 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppCtx>, nick: String, kid_
                         WsMsg::Stat(room) => { // stat online users
                             let room_tx = get_room_tx(&room);
                             let rx_cnt = room_tx.receiver_count();
-                            if i_tx.send(WsMsg::Rsp(format!("onlines:{rx_cnt}"))).await.is_err() { break }
+                            if i_tx.send(WsMsg::Rsp(SvcRsp::Stat{ onlines: rx_cnt })).await.is_err() { break }
                         },
                         _ => {}
                     }
@@ -265,18 +274,18 @@ async fn send_to_client(msg: &WsMsg, sender: &mut SplitSink<WebSocket,Message>) 
     }
     true
 }
-fn cache_invite_msg(store: &Store, kid_b64: &str, ws_msg: WsMsg) -> AppResult<()>{
-    match store.find_in::<Vec<WsMsg>>(INVITATION_TBL, kid_b64) {
+fn cache_msg(store: &Store, tbl: &str, kid_b64: &str, ws_msg: WsMsg) -> AppResult<()>{
+    match store.find_in::<Vec<WsMsg>>(tbl, kid_b64) {
         Ok(mut ws_msgs) => {
             if ws_msgs.contains(&ws_msg) { //should replace with new one
                 ws_msgs.iter_mut().find(|m| *m == &ws_msg).map(|_| ws_msg);
             }else{
                 ws_msgs.push(ws_msg);
-                store.save_in(INVITATION_TBL, kid_b64, &ws_msgs)?;
+                store.save_in(tbl, kid_b64, &ws_msgs)?;
             }
         }
-        Err(_) => {
-            store.save_in(INVITATION_TBL, kid_b64, &vec![ws_msg])?;
+        Err(_e) => {
+            store.save_in(tbl, kid_b64, &vec![ws_msg])?;
         }
     };
     Ok(())

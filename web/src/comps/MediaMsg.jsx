@@ -1,5 +1,5 @@
 import { createResource } from "solid-js";
-import { m_io, me } from '../comps/ChatHelper';
+import { m_io } from '../comps/ChatHelper';
 import { rmk, room, room_id } from "../stores/chat";
 import { u8_b64 } from "../utils/app";
 import { get as find } from "idb-keyval";
@@ -39,13 +39,11 @@ const MediaMsg = ({m,blob_urls}) => { //inner component, for img & voi
       <Switch>
         <Match when={m.kind == 'Img'} >
           <a href={data()?.src} target='_blank' class={m_io(m)}>
-          { me(m) && m.state>0 && <span>{m.state==1?'❗':'🚫'}</span>} &nbsp;
           <img src={data()?.src} class="msg_img m_cont"/>
           </a>
         </Match>
         <Match when={m.kind == 'File'} >
           <div class={`${m_io(m)} txt`}>
-          { me(m) && m.state>0 && <span>{m.state==1?'❗':'🚫'}</span>} &nbsp;
           <a href={data()?.src} download={data()?.file_name} class="download-link m_cont">
             <i class="i-download"></i> {data()?.file_name.slice(8)}
           </a>
@@ -53,7 +51,6 @@ const MediaMsg = ({m,blob_urls}) => { //inner component, for img & voi
         </Match>
         <Match when={m.kind == 'Voi'} >
           <div class={`${m_io(m)} voi`} >
-          { me(m) && m.state>0 && <span>{m.state==1?'❗':'🚫'}</span>} &nbsp;
             <audio src={data()?.src} ref={audio_el}/>
             <i class="i-play msg_audio m_cont" onclick={()=>audio_el.play()}></i>
           </div>

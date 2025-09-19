@@ -5,7 +5,7 @@ use dashmap::DashMap;
 use tower_http::services::{ServeDir, ServeFile};
 use base::db::Store;
 
-use crate::{err::AppResult, model::PubRoom, router::{self, api::PUB_ROOMS_KEY, ws::{BLOCKED_TBL, INVITATION_TBL}, AppCtx, AppState}, NodeMeta};
+use crate::{err::AppResult, model::PubRoom, router::{self, api::PUB_ROOMS_KEY, ws::{BLOCKED_TBL, INVITATION_TBL, TEMP_MEDIA_TBL, TEMP_PRIV_TBL}, AppCtx, AppState}, NodeMeta};
 
 pub async fn start_chat_server(app: &str, port:u16, store: Arc<Store>) -> AppResult<()>{
     let listen_on: String = format!("0.0.0.0:{port}");
@@ -13,6 +13,8 @@ pub async fn start_chat_server(app: &str, port:u16, store: Arc<Store>) -> AppRes
     //init to avoid find fail 
     store.save_in(INVITATION_TBL, "", &0)?;
     store.save_in(BLOCKED_TBL, "", &0)?;
+    store.save_in(TEMP_MEDIA_TBL, "", &0)?;
+    store.save_in(TEMP_PRIV_TBL, "", &0)?;
     
     let state = Arc::new(AppCtx{
         store,

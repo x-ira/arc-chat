@@ -1,3 +1,5 @@
+use std::hash::{DefaultHasher, Hash, Hasher};
+
 use base::db::Store;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
@@ -45,11 +47,17 @@ impl PartialEq for PubRoom {
     }
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SvcRsp {
+    Output(String),
+    Stat{ onlines: usize },
+    Offline,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum WsMsg {
     Bye,
     Listen{ room: String, kind: PubRoomKind }, //for group
     Chat{ room: String, msg: Msg},
-    PrivChat{ kid: Kid, state: u8,  msg: Msg}, //state-> 0: normal, 1: offline, 2: rejected
+    PrivChat{ kid: Kid, msg: Msg}, 
     Media { kid: Kid, by_kid: Kid, id: String, cont_type: String, data: ByteBuf },
     Stat(String), //room-id
     Engagement { kid: Kid, pub_key: Kid,  by_kid: Kid, by_nick: String, by_pub_key: Kid, sign: ByteBuf, ts: i64}, //priv-chat
@@ -59,9 +67,29 @@ pub enum WsMsg {
     Block { kid: Kid, act: u8 },
     Ban { kid: Kid, remaining_time: i64, blocked_cnt: usize }, 
     // Welcome { nick: String, kid: Kid },
-    Rsp(String), // rsp of a svc-call
+    Rsp(SvcRsp), // rsp of a svc-call
 }
 impl WsMsg {
+    fn hash(&self) -> Option<u64> {
+        let mut hasher = DefaultHasher::new();
+        match self {
+            WsMsg::Chat { room, msg } => {
+                msg.hash(&mut hasher);
+                room.hash(&mut hasher);
+            },
+            WsMsg::PrivChat { kid, msg } => {
+                msg.hash(&mut hasher);
+                kid.hash(&mut hasher);
+            },
+            WsMsg::Media { kid, by_kid, id, .. } => {
+                kid.hash(&mut hasher);
+                by_kid.hash(&mut hasher);
+                id.hash(&mut hasher);
+            },
+            _ => { return None}
+        }
+        Some(hasher.finish())
+    }
     fn is_inv(&self) -> Option<([u8;32], u8)>{
         match self {
             WsMsg::Invite { inv, .. } => {
@@ -82,16 +110,15 @@ impl WsMsg {
 }
 impl PartialEq for WsMsg {
     fn eq(&self, other: &Self) -> bool {
-        if let Some(inv) = self.is_inv() {
-            if let Some(inv_other) = other.is_inv() {
+        if let Some(inv) = self.is_inv()
+            && let Some(inv_other) = other.is_inv() {
                 return inv == inv_other
             }
-        }else{ //is none
-            if other.is_inv().is_none() {
-                return self == other
+        if let Some(hash) = self.hash()
+            && let Some(hash_other) = other.hash() {
+                return hash == hash_other
             }
-        }
-        false
+        self == other
     }
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -104,7 +131,7 @@ pub struct Invitation{
     sign: ByteBuf, //for verify sender
     greeting: Option<String>,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Hash)]
 pub struct Msg {
     pub nick: String, //sender
     pub kid: Kid, //sender
@@ -115,14 +142,14 @@ pub struct Msg {
     pub wisper: Option<Kid>, //wisperer kid
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Hash)]
 pub enum MsgKind {
     Txt,
     Img,
     Voi,
     File,
-    Aud,
-    Vid,
+    // Aud,
+    // Vid,
 }
 pub fn nano_id() -> String {
     nanoid::nanoid!()

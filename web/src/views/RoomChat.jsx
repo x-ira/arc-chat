@@ -86,7 +86,6 @@ function RoomChat(props) {
            notify.show('Arc-Chat',`A private ${msg.kind} msg from ${msg.nick}`);
         }
         if(type == 1) {
-          msg.state = ws_msg.PrivChat.state; //state>0 & isMedia, may need update Media TODO
           let msg_rm = msg_room(priv_dist, priv_src);
           find(msg_rm).then((r = [])=>{
             r.push(msg);
@@ -171,7 +170,12 @@ function RoomChat(props) {
         let msg = ws_msg.Ban;
         $cmd_output(`You are banned and will be unbanned after ${Math.ceil(msg.remaining_time/3600000.)} hours.`);
       }else if(ws_msg.Rsp) {
-        $cmd_output(ws_msg.Rsp);
+        let rsp = ws_msg.Rsp;
+        let output = '';
+        if(rsp.Output) output = rsp.Output;
+        else if(rsp.Stat) output = `Online Users: ${rsp.Stat.onlines}`;
+        else if(rsp == 'Offline') output = `${room().nick} is offline, message(s) will be delivered where user is online.`;
+        $cmd_output(output);
       }
     });
   }
@@ -215,7 +219,7 @@ function RoomChat(props) {
   }
   const chat_msg = (kind, cont, wisper) => { // parepared, No cont
     let msg = {nick, kind, ts: Time.ts(), kid, cont: rmk().enc_u8(cont), wisper };
-    return room().type == 0 ? {Chat: {room: room().id, msg}} : {PrivChat: {kid: b64_u8(room().kid), state: 0, msg}};
+    return room().type == 0 ? {Chat: {room: room().id, msg}} : {PrivChat: {kid: b64_u8(room().kid), msg}};
   }
   const handle_input_msg = (cmd, params, send_at_once) => {
     $txt_cmd({cmd, params});
@@ -376,11 +380,6 @@ function RoomChat(props) {
   onCleanup(() =>{
     wsc.close();
   });
-  // createEffect(() =>{
-  //   if(room().rmk) { //rmk change means room changed!!
-  //     refresh_room();
-  //   }
-  // });
   createEffect((rmk) =>{
     if(room().rmk != rmk) { //rmk change means room changed!!
       refresh_room();
@@ -412,7 +411,7 @@ function RoomChat(props) {
               <Show when={u8_b64(m.kid) != skid } >{m.nick}: </Show>
               <Switch>
                 <Match when={m.kind == 'Txt'} >
-                   <div class={`${m_io(m)} txt`} >{me(m) && m.state>0 && <span>{m.state==1?'❗':'🚫'}</span>} <span class="m_cont">{rmk().dec_u8(m.cont)}</span></div>
+                   <div class={`${m_io(m)} txt`}><span class="m_cont">{rmk().dec_u8(m.cont)}</span></div>
                 </Match>
                 <Match when={m.kind != 'Txt'} >
                   <MediaMsg m={m} blob_urls={blob_urls} />

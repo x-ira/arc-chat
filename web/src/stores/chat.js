@@ -7,6 +7,7 @@ const [chat_ctx, $chat_ctx] = createStore({
   joind_rooms: await Room.list(),
   priv_chats: await PrivChat.list(),
 });
+
 const [sys_ctx, $sys_ctx] = createStore({
   is_open: true, // sidebar
   is_mobile: false,
