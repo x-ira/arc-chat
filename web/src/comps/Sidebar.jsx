@@ -51,11 +51,11 @@ function Sidebar(props) {
   };
   const rm_icon = (rm) => {
     if(rm.kind == 'OpenGroup') {
-      return '💬';
+      return 'i-chat'
     }else if(rm.kind && rm.kind.EncryptedGroup){
-      return '✻';
+      return 'i-pass';
     }else{
-      return '✻'; //✱
+      return 'i-lock';
     }
   };
 
@@ -90,7 +90,7 @@ function Sidebar(props) {
                 onClick={() => handleItemClick(rm)}
                 title={rm.desc}
               >
-                <span class="sidebar-icon">{()=>rm_icon(rm)}</span>
+                <span class="sidebar-icon"><i class={`${rm_icon(rm)}`}></i></span>
                 <span class="sidebar-label">{rm.name}</span>
               </div>
             )}
@@ -104,7 +104,7 @@ function Sidebar(props) {
                 onClick={() => handleItemClick(chat)}
                 title={chat.nick}
               >
-                <span class="sidebar-icon">{()=>rm_icon(chat)}</span>
+                <span class="sidebar-icon"><i class={`${rm_icon(chat)}`}></i></span>
                 <span class="sidebar-label">{chat.nick}</span>
               </div>
             )}

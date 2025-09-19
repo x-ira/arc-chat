@@ -1,5 +1,5 @@
 import { createStore, produce, reconcile, unwrap } from 'solid-js/store';
-import { Cipher, Locker, PrivChat, Room } from '../utils/main';
+import { adapt_b64, Cipher, Locker, PrivChat, Room } from '../utils/main';
 
 const [chat_ctx, $chat_ctx] = createStore({
   curr_room: {},
@@ -88,12 +88,14 @@ export function load_room(type, id_b64) {
 export function chg_room(rm) { 
   $chat_ctx('curr_room', reconcile(rm)); 
 }
-export const rmk = (rm) => {
-  rm = rm || unwrap(chat_ctx.curr_room); //stop tracking
-  if(!rm.rmk) return ;
-  let rm_id = room_id(rm);
-  if(!chat_ctx.rmk_cache[rm_id]){
-    $chat_ctx('rmk_cache', rc=>({...rc, [rm_id]:new Cipher(rm.rmk) }) );
+export const rmk = (rm_id = room_id(), type = room().type) => {
+  let _rmk = chat_ctx.rmk_cache[rm_id];
+  if(!_rmk){
+    let rm = load_room(type, rm_id);
+    if(rm && rm.rmk) {
+      _rmk = new Cipher(rm.rmk);
+      $chat_ctx('rmk_cache', rc=>({...rc, [rm_id]:_rmk}) );
+    }
   }
-  return chat_ctx.rmk_cache[rm_id];
+  return _rmk;
 }

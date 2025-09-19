@@ -86,7 +86,7 @@ function RoomQuery(props) {
         <tr>
           <td><a href="#" title={'Id: '+rm[3]} onclick={()=>$sltRoom(arr()[i()])}>{rm[0]}</a> <br/></td>
           <td>{RoomKind.get(rm[2])}</td>
-          <td><a href="#" title="share this room" onclick={()=>share_room(rm[3])}>Share</a></td>
+          <td><span class="share" title="share this room" onclick={()=>share_room(rm[3])}><i class="i-share"></i></span></td>
           <td>{rm[1]}</td>
         </tr>
         }</For>
@@ -99,7 +99,7 @@ function RoomQuery(props) {
       {msg() && <div class="act_msg">{msg}</div> }
       <p>
           <Lnk to="/room"  name="Create Room" class="navi"/> &nbsp;&nbsp;&nbsp;
-          <a href="#"  onclick={invite_priv_chat} class="navi">Priv-Chat Invitation</a> &nbsp;&nbsp;&nbsp;
+          <a href="#"  onclick={invite_priv_chat} class="navi"> Priv-Chat Invitation</a> &nbsp;&nbsp;&nbsp;
           <Lnk to="/roam"  name="Roaming" class="navi"/> &nbsp;
       </p>
     </div>

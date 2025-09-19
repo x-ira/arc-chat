@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'arc';
   src:
-    url('fonts/arc.ttf?2o0gta') format('truetype'),
-    url('fonts/arc.woff?2o0gta') format('woff'),
-    url('fonts/arc.svg?2o0gta#arc') format('svg');
+    url('fonts/arc.ttf?geyr1b') format('truetype'),
+    url('fonts/arc.woff?geyr1b') format('woff'),
+    url('fonts/arc.svg?geyr1b#arc') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -40,20 +40,23 @@
 .i-upload:before {
   content: "\e907";
 }
-.i-ios_share:before {
+.i-share:before {
   content: "\e908";
 }
-.i-chat:before {
+.i-txt:before {
   content: "\e903";
+}
+.i-pass:before {
+  content: "\f069";
+}
+.i-lock:before {
+  content: "\f023";
 }
 .i-bell-o:before {
   content: "\f1f7";
 }
 .i-img:before {
   content: "\e905";
-}
-.i-txt-o:before {
-  content: "\e906";
 }
 .i-voi:before {
   content: "\e902";
@@ -88,32 +91,17 @@
 .i-bolt:before {
   content: "\f0e7";
 }
-.i-folder-o:before {
-  content: "\f114";
-}
-.i-sun-o:before {
-  content: "\f185";
-}
-.i-moon-o:before {
-  content: "\f186";
-}
-.i-calendar:before {
-  content: "\f274";
-}
 .i-key:before {
   content: "\f084";
 }
 .i-hashtag:before {
   content: "\f292";
 }
-.i-plus:before {
-  content: "\f067";
-}
-.i-minus:before {
-  content: "\f068";
-}
 .i-refresh:before {
   content: "\f021";
+}
+.i-chat:before {
+  content: "\e906";
 }
 .i-play:before {
   content: "\ea15";

@@ -9,7 +9,7 @@ import Voice from '../comps/Voice';
 import MediaMsg from '../comps/MediaMsg';
 import Command from '../comps/Command';
 import { engagement_sign, engagement_verify, inv_sign, inv_track_sign, inv_track_verify, inv_verify, m_io, me } from '../comps/ChatHelper';
-import { room, rmk, save_priv_chat, update_priv_chat, priv_chat, room_id, quit_joined_room, remark_joined_room, remark_priv_chat } from '../stores/chat';
+import { room, rmk, save_priv_chat, update_priv_chat, priv_chat, room_id, quit_joined_room, remark_joined_room, remark_priv_chat, load_room } from '../stores/chat';
 import { set, get as find, setMany, del, keys, delMany } from 'idb-keyval';
 import { nanoid } from 'nanoid';
 import WebSocketClient from '../utils/ws';
@@ -73,10 +73,13 @@ function RoomChat(props) {
       // console.log('recv msg', ws_msg);
       if(ws_msg.Chat || ws_msg.PrivChat) {
         let type = ws_msg.Chat ? 0 : 1;
+        let msg = type == 0 ? ws_msg.Chat.msg : ws_msg.PrivChat.msg;
         let priv_src = type == 1 ? u8_b64(ws_msg.PrivChat.msg.kid) : undefined;
         let priv_dist = type == 1 ? u8_b64(ws_msg.PrivChat.kid): undefined;
-        let msg = type == 0 ? ws_msg.Chat.msg : ws_msg.PrivChat.msg;
         let src = type == 0 ? ws_msg.Chat.room : priv_src; //for convenience
+        let msg_rm = type == 1? msg_room(priv_dist, priv_src): src;
+
+        msg.cont = rmk(msg_rm, type).dec_u8(msg.cont);
 
         if(await Blocked.is_blocked(msg.kid)) { //ignore it
           console.log('blocked msg:', ws_msg);
@@ -86,20 +89,23 @@ function RoomChat(props) {
            notify.show('Arc-Chat',`A private ${msg.kind} msg from ${msg.nick}`);
         }
         if(type == 1) {
-          let msg_rm = msg_room(priv_dist, priv_src);
+          let pc = priv_chat()
           find(msg_rm).then((r = [])=>{
             r.push(msg);
             set(msg_rm, r);
           });
         }
-        if(src == room_id() || (priv_src == skid  && priv_dist == room_id())) { 
+        if(src == room_id() || (priv_src == skid && priv_dist == room_id())) { //自发自收
           $msgs([...msgs, msg]);
         }else if(u8_b64(msg.kid) != skid){  //try notify if not sender, support multiple devices
           $notify_msg({src, msg, type});
         }
-      }else if(ws_msg.Media) { // for priv-chat only
+      }else if(ws_msg.Media) { // for priv-chat only currently
         let media = ws_msg.Media;
-        let key = [u8_b64(media.by_kid), media.id]; // no need cal msg_room, sender not send the media via ws
+        let by_kid = u8_b64(media.by_kid);
+        let key = [by_kid, media.id]; // no need cal msg_room, sender not send the media via ws
+        media.file = rmk(by_kid, 1).dec_blob(media.data, media.id, media.cont_type);
+        delete media.data;
         set(key, media).catch(e=>console.error(e));
       }else if(ws_msg.Engagement) {
         let eng = ws_msg.Engagement; 
@@ -126,7 +132,7 @@ function RoomChat(props) {
         }
         let inv_kid_b64 = u8_b64(inv.by_kid);
         let pc = priv_chat(inv_kid_b64);
-        if(!pc) {
+        if(!pc || pc.state == 9) { // 9: means need redo ecdh-exchange, for recovery or other security concern
           let rep = await inv_sign(inv.by_kid, nick);
           let rmk = await ecdh_exchange(inv.by_kid,inv.pub_key, false);
           save_priv_chat({
@@ -200,6 +206,7 @@ function RoomChat(props) {
       let [rest_cnt, bat] = await rsp.json();
       $rest_len(rest_cnt);
       bat = await Blocked.filter(bat); 
+      bat.map(m=>{ m.cont = rmk().dec_u8(m.cont)});
       $msgs([...bat, ...msgs]);
     });
   }
@@ -320,6 +327,8 @@ function RoomChat(props) {
         let media = { kid: b64_u8(room().kid), by_kid: kid, id, cont_type, data};
         wsc.emit({Media:media});
         srcs.push(id);
+        media.file = file;
+        delete media.data;
         medias.push([[room().kid,id] , media]); //key: []
       }
       setMany(medias).catch(e=> console.err(e)); //store for sender
@@ -411,7 +420,7 @@ function RoomChat(props) {
               <Show when={u8_b64(m.kid) != skid } >{m.nick}: </Show>
               <Switch>
                 <Match when={m.kind == 'Txt'} >
-                   <div class={`${m_io(m)} txt`}><span class="m_cont">{rmk().dec_u8(m.cont)}</span></div>
+                   <div class={`${m_io(m)} txt`}><span class="m_cont">{m.cont}</span></div>
                 </Match>
                 <Match when={m.kind != 'Txt'} >
                   <MediaMsg m={m} blob_urls={blob_urls} />
@@ -429,7 +438,7 @@ function RoomChat(props) {
       </div>
       <Switch>
          <Match when={msg_kind() == 'Txt'} >
-          <i class="i-chat m_kind" on:click={()=>$msg_kind('Img')}></i> 
+          <i class="i-txt m_kind" on:click={()=>$msg_kind('Img')}></i> 
           <Command on_ready={handle_input_msg} tip="Say something or start a command with / "  class="texting" txt_cmd={txt_cmd}  filter={cmd_filter}/>
         </Match>
         <Match when={msg_kind() == 'Img'} >

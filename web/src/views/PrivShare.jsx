@@ -1,5 +1,5 @@
-import { createSignal, createEffect, onMount } from 'solid-js';
-import {Btn} from '../comps/Form';
+import { createSignal, createEffect } from 'solid-js';
+import { Btn } from '../comps/Form';
 import { Footer, Header } from '../comps/Base';
 import { url_params, PrivChat } from '../utils/main';
 
@@ -9,14 +9,9 @@ function PrivShare() {
   let skid = params.get('skid');
   let pub_key = params.get('pub_key');
   
-  const decide = (o) => {
+  const decide = (o) => { //always re-create the chat, onMount() is a bad idea
     window.location = `/chat?nick=${nick}&skid=${skid}&pub_key=${pub_key}&decide=${o}`;
   }
-  onMount(async ()=>{
-    if(await PrivChat.get(skid)){ //already joined, navigate to
-      window.location = `/chat?id=${skid}&type=1`;
-    }
-  });
   return (
     <>
     <Header />
@@ -31,7 +26,7 @@ function PrivShare() {
     <div class="page_block">
       <div>
         <h3>~ Arc Private Chat Invitation ~</h3>
-        <h5>You are invited to a private chat with {params.get('nick')} </h5>
+        <h5>You are invited to start a private chat with {params.get('nick')} </h5>
       </div>
       <Btn bind={()=>decide(1)} name="Accept" class="inv_agree"/>
       <Btn bind={()=>decide(0)} name="Decline" class="inv_decline"/>

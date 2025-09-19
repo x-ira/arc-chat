@@ -193,7 +193,7 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppCtx>, nick: String, kid_
                             if i_tx.send(ws_msg.clone()).await.is_err() { break } //send to me
                             if let Some(kid_tx) = state.user_txs.get(kid) {
                                 if kid_tx.send(ws_msg).await.is_err() {  break }  //sent ok
-                            }else {
+                            }else { //offline msg
                                 if cache_msg(&state.store, TEMP_PRIV_TBL, &u8_b64(kid), ws_msg).is_err() {break}
                                 if i_tx.send(WsMsg::Rsp(SvcRsp::Offline)).await.is_err() { break }
                             }

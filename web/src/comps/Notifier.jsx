@@ -2,7 +2,7 @@ import { Time } from "../utils/app";
 import { Lnk } from "../comps/Form";
 import { createEffect, createSignal, onCleanup, Show } from "solid-js";
 import { Room, Cipher } from "../utils/main";
-import { room, chg_room, rmk, load_room } from "../stores/chat";
+import { room, chg_room } from "../stores/chat";
 
 export default function Notifier(props){
   const [msg, $msg] = createSignal();
@@ -78,11 +78,6 @@ export default function Notifier(props){
       updateMsgFrom();
     }
   });
-  const dec_cont = () => {
-    let m = msg();
-    let rm = load_room(m.type, m.src);
-    return rm?rmk(rm).dec_u8(m.msg.cont):'';
-  }
  
   return (
     <>
@@ -91,7 +86,7 @@ export default function Notifier(props){
         <span>
           <Lnk bind={change_room} name={msgFrom} title="Go to the room to view" class="link"/>: &nbsp;
           <Show when={msg().msg.kind == 'Txt'} fallback={<span>&lt; A {msg().msg.kind} Message &gt;</span>} >
-            {dec_cont}
+            {msg().msg.cont}
           </Show>
         </span> &nbsp;
         <div class="no_notify"><i class="i-bell-o" onclick={no_disturb} title="Do not disturb me in a few minutes"></i></div>

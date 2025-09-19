@@ -5,6 +5,9 @@
 td {
   text-align: center;
 }
+.share{
+  cursor: pointer;
+}
 .act_msg {
   margin: 10px 5px;
   padding: 5px;
