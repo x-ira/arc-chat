@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'arc';
   src:
-    url('fonts/arc.ttf?geyr1b') format('truetype'),
-    url('fonts/arc.woff?geyr1b') format('woff'),
-    url('fonts/arc.svg?geyr1b#arc') format('svg');
+    url('fonts/arc.ttf?jxxi6x') format('truetype'),
+    url('fonts/arc.woff?jxxi6x') format('woff'),
+    url('fonts/arc.svg?jxxi6x#arc') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -34,6 +34,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.i-pass:before {
+  content: "\e909";
+}
+.i-play:before {
+  content: "\ea15";
+}
 .i-download:before {
   content: "\e901";
 }
@@ -45,9 +51,6 @@
 }
 .i-txt:before {
   content: "\e903";
-}
-.i-pass:before {
-  content: "\f069";
 }
 .i-lock:before {
   content: "\f023";
@@ -85,14 +88,8 @@
 .i-edit:before {
   content: "\f044";
 }
-.i-thumbs-o-up:before {
-  content: "\f087";
-}
 .i-bolt:before {
   content: "\f0e7";
-}
-.i-key:before {
-  content: "\f084";
 }
 .i-hashtag:before {
   content: "\f292";
@@ -102,7 +99,4 @@
 }
 .i-chat:before {
   content: "\e906";
-}
-.i-play:before {
-  content: "\ea15";
 }
