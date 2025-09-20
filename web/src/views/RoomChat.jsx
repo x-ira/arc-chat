@@ -180,7 +180,7 @@ function RoomChat(props) {
         let output = '';
         if(rsp.Output) output = rsp.Output;
         else if(rsp.Stat) output = `Online Users: ${rsp.Stat.onlines}`;
-        else if(rsp == 'Offline') output = `${room().nick} is offline, message(s) will be delivered where user is online.`;
+        else if(rsp == 'Offline') output = `${room().nick} is offline, message(s) will be delivered when user is online.`;
         $cmd_output(output);
       }
     });
