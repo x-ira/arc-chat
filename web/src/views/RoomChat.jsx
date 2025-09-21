@@ -322,7 +322,7 @@ function RoomChat(props) {
       let medias = [];
       for(const file of blobs) {
         let data = await rmk().enc_file_u8(file);
-        let id = `${nanoid(7)}-${file.name}`; //hash may reduce duplicate
+        let id = file.name?`${nanoid(7)}-${file.name}` : nanoid(12); //hash may reduce duplicate
         let cont_type = file.type;
         let media = { kid: b64_u8(room().kid), by_kid: kid, id, cont_type, data};
         wsc.emit({Media:media});

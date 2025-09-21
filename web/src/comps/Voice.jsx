@@ -35,14 +35,13 @@ async function init_media($v){
   let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   
   let options = {};
-  if (MediaRecorder.isTypeSupported('audio/mp4')) {  // ios
-    options.mimeType = 'audio/mp4';
-  } else if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+  if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
     options.mimeType = 'audio/webm;codecs=opus';
   } else if (MediaRecorder.isTypeSupported('audio/webm')) { //chrome & firefox
     options.mimeType = 'audio/webm';
+  } else if (MediaRecorder.isTypeSupported('audio/mp4')) {  // ios
+    options.mimeType = 'audio/mp4';
   }
-  
   const recorder = new MediaRecorder(stream, options);
   
   // Log the actual format being used for debugging
