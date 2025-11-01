@@ -256,10 +256,10 @@ export class Locker{
     this.locked = locked;
     this.pin_hash = pin_hash;
   }
-  static init(pin) {
+  static async init(pin) {
     let pin_hash = hash_b64(pin);
     let locker = new Locker(false, pin_hash);
-    set('locker', locker, meta);
+    await set('locker', locker, meta);
     return true;
   }
   static async load() {
@@ -269,9 +269,9 @@ export class Locker{
   static verify(locker, pin){
     return hash_b64(pin) ==  locker.pin_hash;
   }
-  static set_lock(locker, state) {
+  static async set_lock(locker, state) {
     locker.locked = state;
-    set('locker', locker, meta);
+    await set('locker', locker, meta);
   }
 }
 export function break_time(curr_ts, curr_i, msgs){

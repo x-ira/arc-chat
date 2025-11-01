@@ -38,13 +38,14 @@ function Setting(){
     
       <div>
         <Pwd name="Set lock PIN" bind={$lock_pin} tip="PIN for app"/>
-        <Btn name="Set" bind={()=>{
-          if(Locker.init(lock_pin())){
-            $msg('done');
+        <Btn name="Set" bind={async ()=>{
+          if(!lock_pin()) return $msg('PIN is required.');
+          if(await Locker.init(lock_pin())){
+            location = '/chat/setting';
           }
         }} /> 
         <Btn name="Clear" bind={()=>{
-          del('locker', meta).then(r=>$msg('done'));
+          del('locker', meta).then(r=>location = '/chat/setting');
         }} />
       </div>
 

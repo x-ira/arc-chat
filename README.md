@@ -32,7 +32,6 @@
   + Using XChacha20Poly1305 to encrypt all messages of all chat types.
   + Using pure-rust cryptography implementation to provide fast & safe E2EE feature.
   + Memory Safety: Rust prevents buffer overflows and memory vulnerabilities
-  + Anti-Replay: HMAC timestamps prevent message replay attacks
 
 > ECDSA & ECDH implementation: Curve25519 (from [dalek-cryptography](https://github.com/dalek-cryptography))
 > XChacha20Poly1305 implementaion: [RustCrypto](https://github.com/RustCrypto)
@@ -48,7 +47,7 @@
   + Create end-to-end encrypted private chat with one click
   + Multiple Modes: Run as relay node or a indepedent chat server
   + No client installation, No login.
-  + Minimize core functions, no unnecessary distractions.
+  + Minimize core functions, distraction free.
   + Lightweight: Minimal resource usage, runs smoothly on any device
   + Mobile ready.
   

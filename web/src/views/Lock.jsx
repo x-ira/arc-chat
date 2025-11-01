@@ -7,23 +7,12 @@ import {Header, Footer} from '../comps/Base';
 function Lock() {
   const [locker] = createResource(async () =>await Locker.load()); 
   let [pin, $pin] = createSignal('');
-  let [unlocked, $unlocked] = createSignal(false);
   let navi = useNavigate();
-  createEffect(()=>{
-    if(locker() && !locker().locked) {
-      Locker.set_lock(locker(), true);
-    }
-  });
-  createEffect(()=>{
-    if(unlocked()) {
-      navi('/');
-    }
-  });
 
   const unlock = async ()=>{
     if(locker() && Locker.verify(locker(), pin())) {
-      Locker.set_lock(locker(), false);
-      $unlocked(true);
+      await Locker.set_lock(locker(), false);
+      navi('/');
     }
   };
   return (

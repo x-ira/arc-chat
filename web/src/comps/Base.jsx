@@ -8,6 +8,10 @@ function Header(){
   let [show_lock, $show_lock] = createSignal(false);
   let [locker] = createResource(async () =>await Locker.load());
   const navi = useNavigate();
+  const lock = async () => {
+    await Locker.set_lock(locker(), true);
+    location = '/';
+  };
   createEffect(()=>{
     if(locker()) {
       if(locker().locked) {
@@ -32,7 +36,7 @@ function Header(){
     </Switch>
       <A href="/chat/setting" target="_self">Settings</A> |&nbsp;
       <Show when={show_lock()} >
-      <A href="/lock" target="_self">Lock</A> |&nbsp;
+      <a href="#" target="_self" onclick={lock}>Lock</a> |&nbsp;
       </Show>
     </nav>
    </>
