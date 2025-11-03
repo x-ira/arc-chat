@@ -49,7 +49,7 @@ function RoomChat(props) {
       }
       let eng = await engagement_sign(skid, kid, pub_key, nick); //always allow invite
       let rmk = await ecdh_exchange(skid, pub_key, true);
-      save_priv_chat({
+      await save_priv_chat({
         kid: skid, nick: by_nick, state: 5, type: 1, rmk:u8_b64(rmk), ts: eng.ts
       });
       wsc.emit({Engagement: eng});
@@ -115,7 +115,7 @@ function RoomChat(props) {
         if(rmk) { 
           state = 9;
           let by_skid = u8_b64(eng.by_kid);
-          save_priv_chat({
+          await save_priv_chat({
             kid: by_skid, nick: eng.by_nick, state, type: 1, rmk:u8_b64(rmk), ts: eng.ts
           });
           if (document.visibilityState === 'hidden') {
@@ -135,23 +135,23 @@ function RoomChat(props) {
         if(!pc || pc.state == 9) { // 9: means need redo ecdh-exchange, for recovery or other security concern
           let rep = await inv_sign(inv.by_kid, nick);
           let rmk = await ecdh_exchange(inv.by_kid,inv.pub_key, false);
-          save_priv_chat({
+          await save_priv_chat({
             kid: inv_kid_b64, nick: inv.by_nick, state: 0, type: 1, rmk:u8_b64(rmk), greeting: inv.greeting, ts: inv.ts
           });
           wsc.emit({Reply: rep}); //reply to inviter
         }else if(pc.state < 2) { //already been invited, treat as agree
-          update_priv_chat(inv_kid_b64, 9);
+          await update_priv_chat(inv_kid_b64, 9);
         }
       }else if(ws_msg.Reply) {
         let rep = ws_msg.Reply.inv; 
         if(!inv_verify(rep)) return; // verify sign
         let rmk = await ecdh_exchange(rep.by_kid,rep.pub_key, true);
         if(rmk) {
-          save_priv_chat({
+          await save_priv_chat({
             kid: u8_b64(rep.by_kid), nick: rep.by_nick, state: 1, type: 1, rmk:u8_b64(rmk), ts: rep.ts,
           });
         }else{
-          update_priv_chat(rep.by_kid, 3);
+          await update_priv_chat(rep.by_kid, 3);
           let it = await inv_track_sign(rep.by_kid, rep.by_nick, 3); //inform partner, expired
           wsc.emit({InviteTracking:it});
         }
@@ -171,7 +171,7 @@ function RoomChat(props) {
         if(cont) {
          notify.show('Arc-Chat', cont);
         }
-        update_priv_chat(u8_b64(it.by_kid), it.state);
+        await update_priv_chat(u8_b64(it.by_kid), it.state);
       }else if(ws_msg.Ban) {
         let msg = ws_msg.Ban;
         $cmd_output(`You are banned and will be unbanned after ${Math.ceil(msg.remaining_time/3600000.)} hours.`);
@@ -254,13 +254,13 @@ function RoomChat(props) {
       case 'invite':
         let pc = priv_chat(params.kid);
         if(pc && pc.state < 2) { //already been invited, treat as accept
-          update_priv_chat(params.kid, 9);
+          await update_priv_chat(params.kid, 9);
         }
         let inv = await inv_sign(b64_u8(params.kid), nick, params.greeting); //always allow invite
         new_msg = {Invite: inv};
         break;
       case 'remark':
-        room().type == 0 ? remark_joined_room(room().id, params.alias) : remark_priv_chat(room().kid, params.alias);
+        room().type == 0 ? await remark_joined_room(room().id, params.alias) : await remark_priv_chat(room().kid, params.alias);
         break;
       case 'quit':
         await quit_joined_room(room().id);
@@ -272,7 +272,7 @@ function RoomChat(props) {
         break;
       case 'leave':  
         await clear_priv_history();
-        update_priv_chat(room_id(),4);
+        await update_priv_chat(room_id(),4);
         clean_room();
         break;
       case 'block':
