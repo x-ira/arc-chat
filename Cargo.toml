@@ -31,10 +31,6 @@ dashmap = "6.1.0"
 nanoid = "0.4.0"
 base64ct = { version = "1", features = ["alloc"] }
 
-[profile.dev]
-opt-level = 0
-codegen-units = 8
-
 [profile.release]  
 lto = true # too slow
 # opt-level = "z"  # default: 3
